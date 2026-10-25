@@ -224,7 +224,33 @@
       "respuesta": "Sí, puedes cancelar sin coste hasta 24 horas antes de la salida."
     }
   ],
-  "reservas": [],
-  "asientosOcupados": []
-  
+  "reservas": [
+    {
+      "codigo": "VP-C2YDBP",
+      "nombre": "Grisel Delgado",
+      "telefono": "53948837",
+      "ruta": "La Habana - Puerto Padre",
+      "fecha": "2026-10-25",
+      "horario": "03:00 pm",
+      "asientos": [
+        18
+      ],
+      "pasajeros": 1,
+      "notas": "",
+      "estado": "confirmada",
+      "notificado": false,
+      "mensajeAdmin": "Tu reserva ha sido confirmada. ¡Buen viaje!",
+      "actualizado": "2026-10-25T23:13:00.048Z",
+      "creada": "2026-10-25T23:13:00.048Z"
+    }
+  ],
+  "asientosOcupados": [
+    {
+      "ruta": "La Habana - Puerto Padre",
+      "fecha": "2026-10-25",
+      "horario": "03:00 pm",
+      "asiento": 18,
+      "marcado": "2026-10-25T23:13:00.048Z"
+    }
+  ]
 }
