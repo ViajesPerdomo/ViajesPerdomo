@@ -45,14 +45,6 @@
   },
   "guaguas": [
     {
-      "id": 1,
-      "icono": "🚌",
-      "nombre": "Guagua Toyota Coaster",
-      "capacidad": "30 pasajeros",
-      "descripcion": "Aire acondicionado, asientos reclinables y WiFi.",
-      "foto": ""
-    },
-    {
       "id": 2,
       "icono": "🚐",
       "nombre": "Minibús Hyundai",
