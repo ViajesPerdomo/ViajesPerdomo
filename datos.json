@@ -71,6 +71,15 @@
       "precio": "16,000 cup",
       "capacidad": 45,
       "foto": ""
+    },
+    {
+      "id": 3,
+      "ruta": "Holguín - Habana",
+      "salida": "Terminal de ómnibus",
+      "horario": "3pm",
+      "precio": "20,000 cup",
+      "capacidad": 45,
+      "foto": ""
     }
   ],
   "cardsSplash": [
