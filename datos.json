@@ -224,5 +224,7 @@
       "respuesta": "Sí, puedes cancelar sin coste hasta 24 horas antes de la salida."
     }
   ],
-  "reservas": []
+  "reservas": [],
+  "asientosOcupados": []
+  
 }
