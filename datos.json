@@ -69,7 +69,17 @@
       "foto": ""
     }
   ],
-  "rutas": [],
+  "rutas": [
+    {
+      "id": 1,
+      "ruta": "La Habana - Puerto Padre",
+      "salida": "L",
+      "horario": "3pm",
+      "precio": "16,000 cup",
+      "capacidad": 45,
+      "foto": ""
+    }
+  ],
   "cardsSplash": [
     {
       "id": 1,
