@@ -69,26 +69,7 @@
       "foto": ""
     }
   ],
-  "rutas": [
-    {
-      "id": 4,
-      "ruta": "La Habana → Trinidad",
-      "salida": "Terminal Central",
-      "horario": "6:30 AM",
-      "precio": "$35 USD",
-      "capacidad": 20,
-      "foto": ""
-    },
-    {
-      "id": 5,
-      "ruta": "Trinidad → La Habana",
-      "salida": "Terminal Trinidad",
-      "horario": "9:00 AM",
-      "precio": "$35 USD",
-      "capacidad": 20,
-      "foto": ""
-    }
-  ],
+  "rutas": [],
   "cardsSplash": [
     {
       "id": 1,
