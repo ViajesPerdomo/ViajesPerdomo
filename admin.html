@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Viajes Perdomo</title>
+<style>
+  :root{
+    --azul:#0b3d91; --azul-claro:#1e6fd9; --verde-wa:#25D366;
+    --rojo:#e74c3c; --amarillo:#f39c12; --gris:#f4f6fb;
+    --texto:#1a1a1a; --sombra:0 6px 20px rgba(0,0,0,.12); --radio:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;}
+  body{background:var(--gris);color:var(--texto);line-height:1.5;}
+  header.admin-header{background:linear-gradient(135deg,var(--azul),var(--azul-claro));color:#fff;padding:22px 20px;text-align:center;}
+  header.admin-header h1{font-size:1.7rem;letter-spacing:.5px;}
+  header.admin-header p{opacity:.9;font-size:.9rem;margin-top:4px;}
+  .tabs{background:#fff;display:flex;justify-content:center;gap:6px;padding:12px;box-shadow:0 2px 10px rgba(0,0,0,.06);position:sticky;top:0;z-index:50;flex-wrap:wrap;}
+  .tabs button{padding:10px 14px;border-radius:30px;font-weight:600;font-size:.82rem;color:var(--azul);transition:.2s;border:none;background:transparent;cursor:pointer;}
+  .tabs button:hover,.tabs button.activo{background:var(--azul);color:#fff;}
+  .tabs button.vista-previa-btn{background:var(--verde-wa);color:#fff;}
+  .tabs button.vista-previa-btn:hover{background:#1ebe5b;}
+  .contenedor{max-width:1000px;margin:auto;padding:24px 16px 120px;}
+  .panel{display:none;}
+  .panel.activo{display:block;animation:aparecer .25s ease;}
+  @keyframes aparecer{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  h2.seccion{font-size:1.4rem;color:var(--azul);margin:6px 0 14px;border-left:5px solid var(--azul-claro);padding-left:10px;}
+  h3.subseccion{font-size:1.05rem;color:var(--azul);margin:18px 0 10px;padding-bottom:6px;border-bottom:1px solid #eef0f5;}
+  .lista{display:flex;flex-direction:column;gap:12px;}
+  .item{background:#fff;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.07);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border-left:4px solid var(--azul-claro);}
+  .item .foto{width:64px;height:64px;border-radius:8px;object-fit:cover;background:#eef0f5;flex-shrink:0;}
+  .item .foto.placeholder{display:flex;align-items:center;justify-content:center;font-size:1.6rem;color:#aaa;}
+  .item .info{flex:1;min-width:180px;}
+  .item .info strong{color:var(--azul);font-size:.95rem;display:block;}
+  .item .info span{font-size:.82rem;color:#666;display:block;margin-top:2px;}
+  .item .item-acciones{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+  .vacio{background:#fff;border-radius:10px;padding:24px;text-align:center;color:#888;font-size:.9rem;box-shadow:0 2px 8px rgba(0,0,0,.07);}
+  .btn-flotante-add{position:fixed;bottom:22px;right:22px;z-index:120;width:60px;height:60px;border-radius:50%;background:var(--azul);color:#fff;border:none;cursor:pointer;font-size:2rem;line-height:1;font-weight:300;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(11,61,145,.5);transition:.2s;}
+  .btn-flotante-add:hover{transform:scale(1.08);background:var(--azul-claro);}
+  .form-card{background:#fff;border-radius:var(--radio);box-shadow:var(--sombra);padding:20px;margin-bottom:18px;}
+  .form-card h3{color:var(--azul);font-size:1.05rem;margin-bottom:12px;}
+  .fila{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  label{display:block;font-size:.82rem;font-weight:600;margin:8px 0 4px;color:#333;}
+  input,select,textarea{width:100%;padding:10px 12px;border:1px solid #d5dbe8;border-radius:8px;font-size:.9rem;font-family:inherit;background:#fff;}
+  textarea{resize:vertical;min-height:80px;}
+  .acciones{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;}
+  .btn{padding:10px 18px;border-radius:30px;border:none;cursor:pointer;font-weight:700;font-size:.88rem;transition:.2s;}
+  .btn-primary{background:var(--azul);color:#fff;}
+  .btn-primary:hover{background:var(--azul-claro);}
+  .btn-success{background:var(--verde-wa);color:#fff;}
+  .btn-success:hover{background:#1ebe5b;}
+  .btn-danger{background:var(--rojo);color:#fff;}
+  .btn-danger:hover{background:#c0392b;}
+  .btn-warning{background:var(--amarillo);color:#fff;}
+  .btn-gris{background:#e8ecf4;color:#333;}
+  .btn-gris:hover{background:#d8dee9;}
+  .btn-sm{padding:6px 12px;font-size:.78rem;}
+  .btn:disabled{opacity:.5;cursor:not-allowed;}
+  .modal-fondo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;align-items:center;justify-content:center;padding:16px;}
+  .modal-fondo.abierto{display:flex;}
+  .modal{background:#fff;border-radius:16px;max-width:600px;width:100%;max-height:90vh;overflow-y:auto;padding:24px;position:relative;animation:aparecer .2s ease;}
+  .modal h3{color:var(--azul);margin-bottom:14px;}
+  .cerrar{position:absolute;top:14px;right:16px;background:none;border:none;font-size:1.5rem;cursor:pointer;color:#888;}
+  .foto-input-wrap{display:flex;align-items:center;gap:12px;margin-top:6px;}
+  .foto-preview{width:70px;height:70px;border-radius:10px;object-fit:cover;background:#eef0f5;border:1px dashed #bcc6d8;display:flex;align-items:center;justify-content:center;font-size:1.6rem;color:#aaa;flex-shrink:0;overflow:hidden;}
+  .foto-preview img{width:100%;height:100%;object-fit:cover;}
+  .foto-btn{padding:9px 16px;border-radius:30px;border:none;cursor:pointer;background:#e8ecf4;color:#333;font-weight:600;font-size:.85rem;transition:.2s;}
+  .foto-btn:hover{background:#d8dee9;}
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(100px);background:#333;color:#fff;padding:12px 22px;border-radius:30px;font-size:.88rem;font-weight:600;z-index:400;opacity:0;transition:.35s ease;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.3);max-width:90vw;text-align:center;}
+  .toast.visible{transform:translateX(-50%) translateY(0);opacity:1;}
+  .toast.exito{background:var(--verde-wa);}
+  .toast.error{background:var(--rojo);}
+  .estado-conexion{display:flex;align-items:center;gap:8px;justify-content:center;padding:10px;font-size:.82rem;background:#fff;border-bottom:1px solid #eef0f5;}
+  .estado-conexion .dot{width:10px;height:10px;border-radius:50%;background:#ccc;}
+  .estado-conexion .dot.ok{background:var(--verde-wa);}
+  .estado-conexion .dot.error{background:var(--rojo);}
+  .estado-conexion .dot.loading{background:var(--amarillo);animation:pulso 1s infinite;}
+  @keyframes pulso{0%,100%{opacity:1;}50%{opacity:.3;}}
+  .aviso{background:#fff8e1;border-left:4px solid var(--amarillo);padding:12px 16px;border-radius:8px;font-size:.85rem;color:#7a5b00;margin-bottom:18px;}
+  .aviso strong{color:#5a4300;}
+  .aviso-info{background:#eef6ff;border-left-color:var(--azul-claro);color:#334;}
+  .selector-asientos{background:#fff;border-radius:var(--radio);box-shadow:var(--sombra);padding:20px;margin-bottom:18px;}
+  .selector-header{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid #eef0f5;}
+  .selector-header > div{flex:1;min-width:140px;}
+  .asientos-grid-admin{display:grid;grid-template-columns:repeat(5, 1fr);gap:8px;max-width:400px;margin:0 auto;}
+  .asiento-admin{width:100%;aspect-ratio:1;border-radius:8px;border:2px solid #d5dbe8;background:#f0fff4;color:#1a9c48;font-weight:700;font-size:.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;}
+  .asiento-admin:hover{border-color:var(--azul-claro);background:#eef6ff;}
+  .asiento-admin.ocupado{background:#ffe8e8;color:#c0392b;border-color:#f5b8b8;text-decoration:line-through;}
+  .asiento-admin.ocupado:hover{background:#ffd6d6;}
+  .asientos-leyenda-admin{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:14px;font-size:.82rem;color:#666;}
+  .asientos-leyenda-admin span{display:flex;align-items:center;gap:6px;}
+  .asientos-leyenda-admin .cuadro{width:16px;height:16px;border-radius:4px;border:2px solid #d5dbe8;display:inline-block;}
+  .asientos-leyenda-admin .cuadro.libre{background:#f0fff4;border-color:#a7e6b8;}
+  .asientos-leyenda-admin .cuadro.ocupado{background:#ffe8e8;border-color:#f5b8b8;}
+  .info-ocupacion{background:#f4f6fb;border-radius:10px;padding:14px;margin-top:14px;font-size:.85rem;color:#444;}
+  .info-ocupacion strong{color:var(--azul);}
+  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px;}
+  .stat-card{background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.07);padding:16px;text-align:center;}
+  .stat-card .num{font-size:1.6rem;font-weight:800;color:var(--azul);}
+  .stat-card .lbl{font-size:.78rem;color:#666;margin-top:4px;}
+  .badge-estado{font-size:.72rem;font-weight:700;padding:4px 10px;border-radius:20px;color:#fff;display:inline-block;}
+  .badge-pendiente{background:var(--amarillo);}
+  .badge-confirmada{background:var(--verde-wa);}
+  .badge-en_camino{background:#3498db;}
+  .badge-completada{background:#8e44ad;}
+  .badge-cancelada{background:var(--rojo);}
+  @media(max-width:600px){
+    header.admin-header h1{font-size:1.3rem;}
+    .fila{grid-template-columns:1fr;}
+    .tabs button{padding:8px 10px;font-size:.75rem;}
+    .asientos-grid-admin{grid-template-columns:repeat(4, 1fr);}
+  }
+</style>
+</head>
+<body>
+
+<div id="adminApp">
+  <header class="admin-header">
+    <h1>⚙️ Panel de Administración</h1>
+    <p>Viajes Perdomo — Conectado a GitHub</p>
+  </header>
+
+  <div class="estado-conexion" id="estadoConexion">
+    <span class="dot" id="dotEstado"></span>
+    <span id="textoEstado">Configura tu token de GitHub para empezar</span>
+  </div>
+
+  <div class="tabs">
+    <button data-tab="enlace" class="activo" onclick="cambiarTab('enlace', this)">📥 Enlace</button>
+    <button data-tab="estado" onclick="cambiarTab('estado', this)">🔔 Estado cliente</button>
+    <button data-tab="asientos" onclick="cambiarTab('asientos', this)">🪑 Asientos</button>
+    <button data-tab="guaguas" onclick="cambiarTab('guaguas', this)">🚌 Guaguas</button>
+    <button data-tab="rutas" onclick="cambiarTab('rutas', this)">🗺️ Rutas</button>
+    <button data-tab="splash" onclick="cambiarTab('splash', this)">✨ Splash</button>
+    <button data-tab="testimonios" onclick="cambiarTab('testimonios', this)">⭐ Testimonios</button>
+    <button data-tab="faqs" onclick="cambiarTab('faqs', this)">❓ FAQs</button>
+    <button data-tab="nosotros" onclick="cambiarTab('nosotros', this)">👥 Nosotros</button>
+    <button data-tab="legal" onclick="cambiarTab('legal', this)">📄 Legal</button>
+    <button data-tab="sitio" onclick="cambiarTab('sitio', this)">📝 Textos</button>
+    <button data-tab="config" onclick="cambiarTab('config', this)">🔑 GitHub</button>
+    <button class="vista-previa-btn" onclick="abrirVistaPrevia()">👁️ Vista previa</button>
+  </div>
+
+  <div class="contenedor">
+
+    <!-- PANEL ENLACE -->
+    <section class="panel activo" id="panel-enlace">
+      <h2 class="seccion">Enlace recibido</h2>
+      <div id="enlaceContenido">
+        <div class="vacio">No hay ningún enlace pendiente. Abre el enlace que te envió el cliente.</div>
+      </div>
+    </section>
+
+    <!-- PANEL ESTADO -->
+    <section class="panel" id="panel-estado">
+      <h2 class="seccion">Estado de reservas</h2>
+      <div class="aviso aviso-info">
+        Cambia el estado de una reserva existente. El cliente verá la notificación en su app.
+      </div>
+      <div class="form-card">
+        <label>Código de reserva *</label>
+        <input id="estadoCodigo" placeholder="VP-XXXXXX" style="text-transform:uppercase;font-family:monospace;font-size:1.1rem;text-align:center;letter-spacing:2px;">
+        <label>Nuevo estado *</label>
+        <select id="estadoNuevo">
+          <option value="pendiente">⏳ Pendiente</option>
+          <option value="confirmada">✅ Confirmada</option>
+          <option value="en_camino">🚌 En camino</option>
+          <option value="completada">🏁 Completada</option>
+          <option value="cancelada">❌ Cancelada</option>
+        </select>
+        <label>Mensaje para el cliente (opcional)</label>
+        <input id="estadoMensaje" placeholder="Ej: Tu asiento está confirmado. ¡Buen viaje!">
+        <div class="acciones">
+          <button class="btn btn-primary" onclick="cambiarEstadoReserva()">💾 Actualizar estado</button>
+        </div>
+      </div>
+      <h3 class="subseccion">Reservas activas</h3>
+      <div id="listaEstadosReservas"></div>
+    </section>
+
+    <!-- PANEL ASIENTOS -->
+    <section class="panel" id="panel-asientos">
+      <h2 class="seccion">Ocupar Asientos</h2>
+      <div class="aviso aviso-info">
+        Selecciona la ruta, fecha y horario. Toca un asiento para marcarlo como <strong>ocupado</strong> (rojo) o <strong>libre</strong> (verde).
+      </div>
+      <div class="selector-asientos">
+        <div class="selector-header">
+          <div><label>Ruta *</label><select id="selRuta" onchange="cargarAsientos()"><option value="">— Selecciona —</option></select></div>
+          <div><label>Fecha *</label><input id="selFecha" type="date" onchange="cargarAsientos()"></div>
+          <div><label>Horario</label><input id="selHorario" placeholder="Ej: 8:00 AM" onchange="cargarAsientos()"></div>
+        </div>
+        <div id="asientosContainer"><p style="text-align:center;color:#888;padding:20px;">Selecciona ruta y fecha.</p></div>
+        <div class="asientos-leyenda-admin">
+          <span><span class="cuadro libre"></span> Libre</span>
+          <span><span class="cuadro ocupado"></span> Ocupado</span>
+        </div>
+        <div class="info-ocupacion" id="infoOcupacion" style="display:none;"></div>
+        <div class="acciones">
+          <button class="btn btn-warning btn-sm" onclick="ocuparTodosAsientos()">🔴 Ocupar todos</button>
+          <button class="btn btn-success btn-sm" onclick="liberarTodosAsientos()">🟢 Liberar todos</button>
+        </div>
+      </div>
+      <h3 class="subseccion">Asientos marcados manualmente</h3>
+      <div id="listaReservasAdmin"></div>
+    </section>
+
+    <!-- PANEL GUAGUAS -->
+    <section class="panel" id="panel-guaguas">
+      <h2 class="seccion">Guaguas</h2>
+      <div class="lista" id="listaGuaguas"></div>
+    </section>
+
+    <!-- PANEL RUTAS -->
+    <section class="panel" id="panel-rutas">
+      <h2 class="seccion">Rutas</h2>
+      <div class="lista" id="listaRutas"></div>
+    </section>
+
+    <!-- PANEL SPLASH -->
+    <section class="panel" id="panel-splash">
+      <h2 class="seccion">Tarjetas del Splash</h2>
+      <div class="aviso">Estas tarjetas publicitarias se deslizan en 3D durante la pantalla de carga.</div>
+      <div id="listaSplash"></div>
+    </section>
+
+    <!-- PANEL TESTIMONIOS -->
+    <section class="panel" id="panel-testimonios">
+      <h2 class="seccion">Testimonios</h2>
+      <div class="lista" id="listaTestimonios"></div>
+    </section>
+
+    <!-- PANEL FAQs -->
+    <section class="panel" id="panel-faqs">
+      <h2 class="seccion">Preguntas Frecuentes</h2>
+      <div class="lista" id="listaFaqs"></div>
+    </section>
+
+    <!-- PANEL NOSOTROS -->
+    <section class="panel" id="panel-nosotros">
+      <h2 class="seccion">Quiénes somos</h2>
+      <div class="form-card">
+        <h3>📸 Logo de la agencia</h3>
+        <div class="foto-input-wrap">
+          <div class="foto-preview" id="logoPreview">🚐</div>
+          <button class="foto-btn" type="button" onclick="document.getElementById('logoInput').click()">📷 Subir logo</button>
+          <button class="foto-btn" type="button" onclick="quitarLogo()">🗑️ Quitar</button>
+          <input type="file" id="logoInput" accept="image/*" style="display:none" onchange="onLogoSelect(this)">
+        </div>
+      </div>
+      <div class="form-card">
+        <h3>📝 Texto de "Quiénes somos"</h3>
+        <label>Texto principal</label>
+        <textarea id="cfgNosotrosTexto"></textarea>
+        <label>Foto (opcional)</label>
+        <div class="foto-input-wrap">
+          <div class="foto-preview" id="nosotrosFotoPreview"></div>
+          <button class="foto-btn" type="button" onclick="document.getElementById('nosotrosFotoInput').click()">📷 Elegir foto</button>
+          <input type="file" id="nosotrosFotoInput" accept="image/*" style="display:none" onchange="onNosotrosFoto(this)">
+        </div>
+      </div>
+      <div class="form-card">
+        <h3>📊 Estadísticas</h3>
+        <div class="fila"><div><label>Número 1</label><input id="cfgStat1Num"></div><div><label>Etiqueta 1</label><input id="cfgStat1Lbl"></div></div>
+        <div class="fila"><div><label>Número 2</label><input id="cfgStat2Num"></div><div><label>Etiqueta 2</label><input id="cfgStat2Lbl"></div></div>
+        <div class="fila"><div><label>Número 3</label><input id="cfgStat3Num"></div><div><label>Etiqueta 3</label><input id="cfgStat3Lbl"></div></div>
+      </div>
+      <div class="acciones">
+        <button class="btn btn-success" onclick="guardarNosotros()">💾 Guardar "Quiénes somos"</button>
+      </div>
+    </section>
+
+    <!-- PANEL LEGAL -->
+    <section class="panel" id="panel-legal">
+      <h2 class="seccion">Legal y confianza</h2>
+      <div class="form-card"><h3>🔒 Aviso de privacidad</h3><textarea id="cfgPrivacidad"></textarea></div>
+      <div class="form-card"><h3>📄 Términos y condiciones</h3><textarea id="cfgTerminos"></textarea></div>
+      <div class="form-card"><h3>🚫 Política de cancelación</h3><textarea id="cfgPoliticaCancelacion"></textarea></div>
+      <div class="form-card"><h3>✅ Sellos de confianza</h3><label>Un sello por línea</label><textarea id="cfgSellos"></textarea></div>
+      <div class="acciones"><button class="btn btn-success" onclick="guardarLegal()">💾 Guardar todo lo legal</button></div>
+    </section>
+
+    <!-- PANEL SITIO -->
+    <section class="panel" id="panel-sitio">
+      <h2 class="seccion">Textos del sitio</h2>
+      <div class="form-card">
+        <h3>📱 WhatsApp</h3>
+        <label>Número (sin +, sin espacios) *</label>
+        <input id="cfgWhatsapp" placeholder="5350053909">
+      </div>
+      <div class="form-card">
+        <h3>🏠 Header y Hero</h3>
+        <label>Nombre de la agencia</label><input id="cfgHeaderNombre">
+        <label>Icono del header (emoji)</label><input id="cfgHeaderLogo">
+        <label>Subtítulo del header</label><input id="cfgHeaderSub">
+        <label>Título del hero</label><input id="cfgHeroTitulo">
+        <label>Texto del hero</label><textarea id="cfgHeroTexto"></textarea>
+        <label>Slogan del splash</label><input id="cfgSplashSlogan">
+      </div>
+      <div class="form-card">
+        <h3>ℹ️ Tarjetas informativas</h3>
+        <div class="fila"><div><label>Icono 1</label><input id="cfgInfo1Icono"></div><div><label>Título 1</label><input id="cfgInfo1Titulo"></div></div>
+        <label>Texto 1</label><input id="cfgInfo1Texto">
+        <div class="fila"><div><label>Icono 2</label><input id="cfgInfo2Icono"></div><div><label>Título 2</label><input id="cfgInfo2Titulo"></div></div>
+        <label>Texto 2</label><input id="cfgInfo2Texto">
+        <div class="fila"><div><label>Icono 3</label><input id="cfgInfo3Icono"></div><div><label>Título 3</label><input id="cfgInfo3Titulo"></div></div>
+        <label>Texto 3</label><input id="cfgInfo3Texto">
+      </div>
+      <div class="acciones"><button class="btn btn-success" onclick="guardarConfig()">💾 Guardar todos los textos</button></div>
+    </section>
+
+    <!-- PANEL CONFIGURACIÓN GITHUB -->
+    <section class="panel" id="panel-config">
+      <h2 class="seccion">Conexión con GitHub</h2>
+      <div class="aviso"><strong>🔐 Seguridad:</strong> Usa un <strong>Fine-grained token</strong> limitado <strong>solo a este repositorio</strong> con permiso <strong>"Contents: Read and write"</strong>.</div>
+      <div class="form-card">
+        <h3>🔑 Token de GitHub</h3>
+        <label>Fine-grained Personal Access Token *</label>
+        <input id="ghToken" type="password" placeholder="github_pat_...">
+      </div>
+      <div class="form-card">
+        <h3>📦 Repositorio</h3>
+        <div class="fila"><div><label>Usuario *</label><input id="ghOwner" placeholder="tu-usuario"></div><div><label>Repositorio *</label><input id="ghRepo" placeholder="viajes-perdomo"></div></div>
+        <div class="fila"><div><label>Rama</label><input id="ghBranch" value="main"></div><div><label>Ruta datos</label><input id="ghPath" value="datos.json"></div></div>
+      </div>
+      <div class="acciones">
+        <button class="btn btn-primary" onclick="guardarConfigGitHub()">💾 Guardar configuración</button>
+        <button class="btn btn-success" onclick="probarConexion()">🔗 Probar conexión</button>
+        <button class="btn btn-danger" onclick="borrarConfigGitHub()">🗑️ Borrar configuración</button>
+      </div>
+    </section>
+
+  </div>
+
+  <button class="btn-flotante-add" id="btnAddFlotante" onclick="abrirAddActual()" title="Agregar nuevo">+</button>
+</div>
+
+<div class="modal-fondo" id="modalForm">
+  <div class="modal">
+    <button class="cerrar" onclick="cerrarModalForm()">✕</button>
+    <div id="modalFormContenido"></div>
+  </div>
+</div>
+
+<div id="vistaPrevia" style="display:none;position:fixed;inset:0;z-index:500;background:#f4f6fb;overflow-y:auto;">
+  <div style="position:sticky;top:0;z-index:10;background:#111;color:#fff;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;">
+    <div><span style="background:#25D366;color:#fff;padding:4px 12px;border-radius:30px;font-weight:700;font-size:.78rem;">👁️ Vista previa</span></div>
+    <button style="background:#fff;color:#111;border:none;padding:8px 16px;border-radius:30px;font-weight:700;font-size:.82rem;cursor:pointer;" onclick="cerrarVistaPrevia()">✕ Salir</button>
+  </div>
+  <div id="vistaPreviaContenido"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const DEFAULT_DATA = {
+  config: {
+    whatsapp: "5350053909", headerNombre: "Viajes Perdomo", headerLogo: "🚐", logoUrl: "",
+    headerSub: "Guaguas, rutas y reservas directas por WhatsApp",
+    heroTitulo: "Bienvenido a Viajes Perdomo",
+    heroTexto: "Tu transporte cómodo, seguro y directo.",
+    splashSlogan: "Tu viaje, nuestra pasión",
+    info1Icono: "🚌", info1Titulo: "Flota moderna", info1Texto: "Guaguas con aire acondicionado, WiFi y asientos cómodos.",
+    info2Icono: "🕒", info2Titulo: "Horarios flexibles", info2Texto: "Salidas diarias hacia los destinos más populares.",
+    info3Icono: "📱", info3Titulo: "Reserva directa", info3Texto: "Sin intermediarios: tu reserva llega directo a nuestro WhatsApp.",
+    nosotrosTexto: "Viajes Perdomo nació con la idea de ofrecer un transporte cómodo, seguro y confiable.",
+    nosotrosFoto: "",
+    nosotrosStats: [{num:"+500",lbl:"Viajes realizados"},{num:"+1.200",lbl:"Clientes felices"},{num:"5 años",lbl:"De experiencia"}],
+    politicaCancelacion: "Puedes cancelar tu reserva sin coste hasta 24 horas antes de la salida.",
+    privacidad: "En Viajes Perdomo solo recogemos los datos necesarios para gestionar tu reserva.",
+    terminos: "<p>Al reservar aceptas las condiciones.</p>",
+    sellos: ["✅ Sin pago online", "🔒 Datos protegidos", "🎫 Reserva sin riesgo"]
+  },
+  guaguas: [], rutas: [], cardsSplash: [], testimonios: [], faqs: [],
+  reservas: [], asientosOcupados: []
+};
+
+let DATA = null;
+let tabActual = "enlace";
+let editando = { tipo: null, id: null };
+let fotoTemporal = "";
+let logoBase64 = "";
+let nosotrosFotoBase64 = "";
+let ghConfig = null;
+let fileSha = null;
+let clientesSha = null;
+let enlacePendiente = null;
+
+function cargarConfigGitHub(){
+  try{
+    const c = localStorage.getItem("vp_gh_config");
+    if(c){
+      ghConfig = JSON.parse(c);
+      document.getElementById("ghToken").value = ghConfig.token || "";
+      document.getElementById("ghOwner").value = ghConfig.owner || "";
+      document.getElementById("ghRepo").value = ghConfig.repo || "";
+      document.getElementById("ghBranch").value = ghConfig.branch || "main";
+      document.getElementById("ghPath").value = ghConfig.path || "datos.json";
+      return true;
+    }
+  }catch(e){}
+  return false;
+}
+
+function guardarConfigGitHub(){
+  const token = document.getElementById("ghToken").value.trim();
+  const owner = document.getElementById("ghOwner").value.trim();
+  const repo = document.getElementById("ghRepo").value.trim();
+  const branch = document.getElementById("ghBranch").value.trim() || "main";
+  const path = document.getElementById("ghPath").value.trim() || "datos.json";
+  if(!token || !owner || !repo){ mostrarToast("Completa token, usuario y repositorio", "error"); return; }
+  ghConfig = { token, owner, repo, branch, path };
+  localStorage.setItem("vp_gh_config", JSON.stringify(ghConfig));
+  mostrarToast("Configuración guardada");
+  actualizarEstadoConexion("ok", "Configuración guardada. Pulsa 'Probar conexión'.");
+}
+
+function borrarConfigGitHub(){
+  if(!confirm("¿Borrar la configuración de GitHub?")) return;
+  localStorage.removeItem("vp_gh_config");
+  ghConfig = null; fileSha = null; clientesSha = null;
+  document.getElementById("ghToken").value = "";
+  document.getElementById("ghOwner").value = "";
+  document.getElementById("ghRepo").value = "";
+  document.getElementById("ghBranch").value = "main";
+  document.getElementById("ghPath").value = "datos.json";
+  mostrarToast("Configuración borrada");
+  actualizarEstadoConexion("", "Configura tu token de GitHub para empezar");
+}
+
+function actualizarEstadoConexion(estado, texto){
+  document.getElementById("dotEstado").className = "dot" + (estado ? " " + estado : "");
+  document.getElementById("textoEstado").textContent = texto;
+}
+
+async function probarConexion(){
+  if(!ghConfig && (!cargarConfigGitHub() || !ghConfig)){ mostrarToast("Primero guarda la configuración", "error"); return; }
+  actualizarEstadoConexion("loading", "Conectando...");
+  try{
+    const ok = await leerDatosDeGitHub();
+    mostrarToast(ok ? "✅ Conexión exitosa" : "⚠️ Archivo no encontrado. Se creará al guardar.");
+    actualizarEstadoConexion("ok", "Conectado a " + ghConfig.owner + "/" + ghConfig.repo);
+  }catch(e){
+    mostrarToast("❌ Error: " + e.message, "error");
+    actualizarEstadoConexion("error", "Error: " + e.message);
+  }
+}
+
+async function leerDatosDeGitHub(){
+  if(!ghConfig) return false;
+  try{
+    const url = `https://api.github.com/repos/${ghConfig.owner}/${ghConfig.repo}/contents/${ghConfig.path}?ref=${ghConfig.branch}`;
+    const resp = await fetch(url, {headers: {"Authorization": `Bearer ${ghConfig.token}`, "Accept": "application/vnd.github+json"}});
+    if(resp.status === 404){
+      fileSha = null;
+      DATA = JSON.parse(JSON.stringify(DEFAULT_DATA));
+      renderTodo();
+      return false;
+    }
+    if(!resp.ok){ const err = await resp.json().catch(()=>({})); throw new Error(err.message || "HTTP " + resp.status); }
+    const json = await resp.json();
+    fileSha = json.sha;
+    const contenido = decodeURIComponent(escape(atob(json.content.replace(/\n/g, ""))));
+    DATA = JSON.parse(contenido);
+    if(!DATA.testimonios) DATA.testimonios = [];
+    if(!DATA.faqs) DATA.faqs = [];
+    if(!DATA.reservas) DATA.reservas = [];
+    if(!DATA.asientosOcupados) DATA.asientosOcupados = [];
+    if(!DATA.config.nosotrosStats) DATA.config.nosotrosStats = DEFAULT_DATA.config.nosotrosStats;
+    if(!DATA.config.sellos) DATA.config.sellos = DEFAULT_DATA.config.sellos;
+    renderTodo();
+    return true;
+  }catch(e){ console.warn("Error leyendo:", e); throw e; }
+}
+
+async function guardarEnGitHub(){
+  if(!ghConfig && (!cargarConfigGitHub() || !ghConfig)){ mostrarToast("Configura GitHub en la pestaña 🔑", "error"); return false; }
+  actualizarEstadoConexion("loading", "Guardando...");
+  try{
+    let sha = fileSha;
+    if(!sha){
+      try{
+        const url = `https://api.github.com/repos/${ghConfig.owner}/${ghConfig.repo}/contents/${ghConfig.path}?ref=${ghConfig.branch}`;
+        const resp = await fetch(url, {headers: {"Authorization": `Bearer ${ghConfig.token}`, "Accept": "application/vnd.github+json"}});
+        if(resp.ok){ const j = await resp.json(); sha = j.sha; }
+      }catch(e){}
+    }
+    const contenido = JSON.stringify(DATA, null, 2);
+    const base64 = btoa(unescape(encodeURIComponent(contenido)));
+    const url = `https://api.github.com/repos/${ghConfig.owner}/${ghConfig.repo}/contents/${ghConfig.path}`;
+    const body = { message: "Actualizar datos.json desde admin", content: base64, branch: ghConfig.branch };
+    if(sha) body.sha = sha;
+    const resp = await fetch(url, {
+      method: "PUT",
+      headers: {"Authorization": `Bearer ${ghConfig.token}`, "Accept": "application/vnd.github+json", "Content-Type": "application/json"},
+      body: JSON.stringify(body)
+    });
+    if(!resp.ok){ const err = await resp.json().catch(()=>({})); throw new Error(err.message || "HTTP " + resp.status); }
+    const resultado = await resp.json();
+    fileSha = resultado.content.sha;
+    actualizarEstadoConexion("ok", "Guardado: " + new Date().toLocaleTimeString());
+    mostrarToast("✅ Guardado en GitHub");
+    return true;
+  }catch(e){
+    actualizarEstadoConexion("error", "Error: " + e.message);
+    mostrarToast("❌ Error: " + e.message, "error");
+    return false;
+  }
+}
+
+/* CLIENTES (datoscliente.json) */
+async function leerClientesDeGitHub(){
+  if(!ghConfig) return { clientes: [] };
+  try{
+    const url = `https://api.github.com/repos/${ghConfig.owner}/${ghConfig.repo}/contents/datoscliente.json?ref=${ghConfig.branch}`;
+    const resp = await fetch(url, {headers: {"Authorization": `Bearer ${ghConfig.token}`, "Accept": "application/vnd.github+json"}});
+    if(resp.status === 404){ clientesSha = null; return { clientes: [] }; }
+    if(!resp.ok) throw new Error("HTTP " + resp.status);
+    const json = await resp.json();
+    clientesSha = json.sha;
+    const contenido = decodeURIComponent(escape(atob(json.content.replace(/\n/g, ""))));
+    const data = JSON.parse(contenido);
+    if(!data.clientes) data.clientes = [];
+    return data;
+  }catch(e){ console.warn("Error leyendo clientes:", e); return { clientes: [] }; }
+}
+
+async function guardarClientesEnGitHub(data){
+  if(!ghConfig) return false;
+  try{
+    const contenido = JSON.stringify(data, null, 2);
+    const base64 = btoa(unescape(encodeURIComponent(contenido)));
+    const url = `https://api.github.com/repos/${ghConfig.owner}/${ghConfig.repo}/contents/datoscliente.json`;
+    const body = { message: "Actualizar datoscliente.json", content: base64, branch: ghConfig.branch };
+    if(clientesSha) body.sha = clientesSha;
+    const resp = await fetch(url, {
+      method: "PUT",
+      headers: {"Authorization": `Bearer ${ghConfig.token}`, "Accept": "application/vnd.github+json", "Content-Type": "application/json"},
+      body: JSON.stringify(body)
+    });
+    if(!resp.ok) throw new Error("HTTP " + resp.status);
+    const res = await resp.json();
+    clientesSha = res.content.sha;
+    return true;
+  }catch(e){ console.warn("Error guardando clientes:", e); return false; }
+}
+
+async function guardarClienteEnArchivo(cliente){
+  const data = await leerClientesDeGitHub();
+  if(!data.clientes) data.clientes = [];
+  const idx = data.clientes.findIndex(c => c.codigo === cliente.codigo);
+  if(idx >= 0) data.clientes[idx] = Object.assign({}, data.clientes[idx], cliente);
+  else data.clientes.push(cliente);
+  return await guardarClientesEnGitHub(data);
+}
+
+async function actualizarClienteEnArchivo(codigo, cambios){
+  const data = await leerClientesDeGitHub();
+  if(!data.clientes) data.clientes = [];
+  const idx = data.clientes.findIndex(c => c.codigo === codigo);
+  if(idx >= 0){
+    data.clientes[idx] = Object.assign({}, data.clientes[idx], cambios);
+    return await guardarClientesEnGitHub(data);
+  }
+  return false;
+}
+
+function nuevoId(lista){ return lista.length ? Math.max(...lista.map(x => x.id)) + 1 : 1; }
+function mostrarToast(msg, tipo = "exito"){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className = "toast visible " + tipo;
+  setTimeout(() => t.classList.remove("visible"), 3000);
+}
+function escaparHTML(s){ return String(s || "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function escapeAttr(s){ return String(s || "").replace(/'/g, "\\'").replace(/"/g, "&quot;"); }
+
+function cambiarTab(nombre, boton){
+  tabActual = nombre;
+  document.querySelectorAll(".panel").forEach(p => p.classList.remove("activo"));
+  const panel = document.getElementById("panel-" + nombre);
+  if(panel) panel.classList.add("activo");
+  document.querySelectorAll(".tabs button").forEach(b => b.classList.remove("activo"));
+  if(boton) boton.classList.add("activo");
+
+  const btnAdd = document.getElementById("btnAddFlotante");
+  const tabsConAdd = ["guaguas","rutas","splash","testimonios","faqs"];
+  btnAdd.style.display = tabsConAdd.includes(nombre) ? "flex" : "none";
+
+  if(nombre === "sitio") cargarConfigForm();
+  if(nombre === "config") cargarConfigGitHub();
+  if(nombre === "nosotros") cargarNosotrosForm();
+  if(nombre === "legal") cargarLegalForm();
+  if(nombre === "asientos") inicializarAsientos();
+  if(nombre === "estado") renderListaEstados();
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+/* ============================================================
+   ENLACE RECIBIDO (?r=base64)
+   ============================================================ */
+function leerEnlaceAdmin(){
+  const params = new URLSearchParams(window.location.search);
+  const r = params.get("r");
+  if(!r) return null;
+  try{
+    const json = decodeURIComponent(escape(atob(r)));
+    return JSON.parse(json);
+  }catch(e){ console.warn("Enlace inválido:", e); return null; }
+}
+
+function mostrarEnlacePendiente(){
+  const data = leerEnlaceAdmin();
+  const cont = document.getElementById("enlaceContenido");
+  if(!data){
+    cont.innerHTML = `<div class="vacio">No hay ningún enlace pendiente. Abre el enlace que te envió el cliente.</div>`;
+    return;
+  }
+  enlacePendiente = data;
+
+  if(data.tipo === "reserva"){
+    cont.innerHTML = `
+      <div class="form-card">
+        <h3>📥 Aplicar reserva desde enlace</h3>
+        <div style="background:#eef6ff;border-left:4px solid var(--azul-claro);padding:14px;border-radius:8px;margin-bottom:14px;font-size:.9rem;">
+          <p><strong>Código:</strong> ${escaparHTML(data.codigo)}</p>
+          <p><strong>Nombre:</strong> ${escaparHTML(data.nombre)}</p>
+          <p><strong>Teléfono:</strong> ${escaparHTML(data.telefono)}</p>
+          <p><strong>Ruta:</strong> ${escaparHTML(data.ruta)}</p>
+          <p><strong>Fecha:</strong> ${data.fecha} ${data.horario ? "· " + escaparHTML(data.horario) : ""}</p>
+          <p><strong>Asientos:</strong> ${(data.asientos || []).join(", ")}</p>
+          <p><strong>Pasajeros:</strong> ${data.pasajeros || 1}</p>
+          ${data.notas ? `<p><strong>Notas:</strong> ${escaparHTML(data.notas)}</p>` : ""}
+        </div>
+        <div class="acciones">
+          <button class="btn btn-gris" onclick="descartarEnlace()">Cancelar</button>
+          <button class="btn btn-success" onclick="aplicarReservaDesdeEnlace()">✅ Aplicar y ocupar asientos</button>
+        </div>
+      </div>
+    `;
+  }else if(data.tipo === "cancelacion"){
+    cont.innerHTML = `
+      <div class="form-card">
+        <h3>📥 Aplicar cancelación desde enlace</h3>
+        <div style="background:#ffe8e8;border-left:4px solid var(--rojo);padding:14px;border-radius:8px;margin-bottom:14px;font-size:.9rem;">
+          <p><strong>Código:</strong> ${escaparHTML(data.codigo)}</p>
+          <p><strong>Motivo:</strong> ${escaparHTML(data.motivo || "—")}</p>
+          ${data.comentario ? `<p><strong>Comentario:</strong> ${escaparHTML(data.comentario)}</p>` : ""}
+        </div>
+        <div class="acciones">
+          <button class="btn btn-gris" onclick="descartarEnlace()">Cancelar</button>
+          <button class="btn btn-danger" onclick="aplicarCancelacionDesdeEnlace()">❌ Liberar asientos</button>
+        </div>
+      </div>
+    `;
+  }
+}
+
+function descartarEnlace(){
+  enlacePendiente = null;
+  window.history.replaceState({}, "", window.location.pathname);
+  document.getElementById("enlaceContenido").innerHTML = `<div class="vacio">Enlace descartado.</div>`;
+}
+
+async function aplicarReservaDesdeEnlace(){
+  if(!enlacePendiente) return;
+  const data = enlacePendiente;
+
+  if(!DATA.reservas) DATA.reservas = [];
+  if(DATA.reservas.find(r => r.codigo === data.codigo)){
+    mostrarToast("Esta reserva ya está aplicada", "error");
+    return;
+  }
+
+  DATA.reservas.push({
+    codigo: data.codigo,
+    nombre: data.nombre,
+    telefono: data.telefono,
+    ruta: data.ruta,
+    fecha: data.fecha,
+    horario: data.horario,
+    asientos: data.asientos,
+    pasajeros: data.pasajeros || 1,
+    notas: data.notas || "",
+    estado: "confirmada",
+    notificado: false,
+    mensajeAdmin: "Tu reserva ha sido confirmada. ¡Buen viaje!",
+    actualizado: new Date().toISOString(),
+    creada: new Date().toISOString()
+  });
+
+  if(!DATA.asientosOcupados) DATA.asientosOcupados = [];
+  (data.asientos || []).forEach(num => {
+    DATA.asientosOcupados.push({
+      ruta: data.ruta, fecha: data.fecha,
+      horario: (data.horario || "").trim(),
+      asiento: num, marcado: new Date().toISOString()
+    });
+  });
+
+  await guardarEnGitHub();
+
+  await guardarClienteEnArchivo({
+    codigo: data.codigo, nombre: data.nombre, telefono: data.telefono,
+    ruta: data.ruta, fecha: data.fecha, horario: data.horario || "",
+    asientos: data.asientos, pasajeros: data.pasajeros || 1,
+    notas: data.notas || "",
+    estado: "confirmada",
+    notificado: false,
+    mensajeAdmin: "Tu reserva ha sido confirmada. ¡Buen viaje!",
+    actualizado: new Date().toISOString(),
+    creada: new Date().toISOString(),
+    cancelada: null, motivoCancelacion: null
+  });
+
+  mostrarToast("✅ Reserva aplicada y asientos ocupados");
+  descartarEnlace();
+  renderTodo();
+}
+
+async function aplicarCancelacionDesdeEnlace(){
+  if(!enlacePendiente) return;
+  const data = enlacePendiente;
+
+  const reserva = (DATA.reservas || []).find(r => r.codigo === data.codigo);
+  if(reserva){
+    reserva.estado = "cancelada";
+    reserva.notificado = false;
+    reserva.mensajeAdmin = "Tu reserva ha sido cancelada. Motivo: " + (data.motivo || "—");
+    reserva.cancelada = new Date().toISOString();
+    reserva.actualizado = new Date().toISOString();
+  }
+
+  const asientosLiberar = reserva ? (reserva.asientos || []) : [];
+  const ruta = reserva ? reserva.ruta : null;
+  const fecha = reserva ? reserva.fecha : null;
+  const horario = reserva ? (reserva.horario || "").trim() : "";
+
+  if(ruta && fecha){
+    DATA.asientosOcupados = (DATA.asientosOcupados || []).filter(a =>
+      !(a.ruta === ruta && a.fecha === fecha && (a.horario || "").trim() === horario && asientosLiberar.includes(Number(a.asiento)))
+    );
+  }
+
+  await guardarEnGitHub();
+
+  await actualizarClienteEnArchivo(data.codigo, {
+    estado: "cancelada",
+    notificado: false,
+    mensajeAdmin: "Tu reserva ha sido cancelada. Motivo: " + (data.motivo || "—"),
+    cancelada: new Date().toISOString(),
+    motivoCancelacion: data.motivo || "",
+    comentarioCancelacion: data.comentario || "",
+    actualizado: new Date().toISOString()
+  });
+
+  mostrarToast("❌ Cancelación aplicada");
+  descartarEnlace();
+  renderTodo();
+}
+
+/* ============================================================
+   ESTADO CLIENTE
+   ============================================================ */
+async function cambiarEstadoReserva(){
+  const codigo = document.getElementById("estadoCodigo").value.trim().toUpperCase();
+  const nuevoEstado = document.getElementById("estadoNuevo").value;
+  const mensaje = document.getElementById("estadoMensaje").value.trim();
+
+  if(!codigo){ mostrarToast("Escribe el código", "error"); return; }
+
+  const reserva = (DATA.reservas || []).find(r => r.codigo === codigo);
+  if(!reserva){
+    mostrarToast("Código no encontrado en datos.json", "error");
+    return;
+  }
+
+  reserva.estado = nuevoEstado;
+  reserva.notificado = false;
+  reserva.mensajeAdmin = mensaje || "";
+  reserva.actualizado = new Date().toISOString();
+
+  await guardarEnGitHub();
+  await actualizarClienteEnArchivo(codigo, {
+    estado: nuevoEstado,
+    notificado: false,
+    mensajeAdmin: mensaje || "",
+    actualizado: new Date().toISOString()
+  });
+
+  mostrarToast("✅ Estado actualizado a: " + nuevoEstado);
+  renderListaEstados();
+}
+
+function renderListaEstados(){
+  const cont = document.getElementById("listaEstadosReservas");
+  if(!cont) return;
+  const reservas = DATA.reservas || [];
+  if(!reservas.length){
+    cont.innerHTML = `<div class="vacio">No hay reservas registradas.</div>`;
+    return;
+  }
+  cont.innerHTML = reservas.slice().reverse().map(r => `
+    <div class="item" style="border-left-color:${colorEstado(r.estado)};">
+      <div class="info">
+        <strong>${escaparHTML(r.codigo)} — ${escaparHTML(r.nombre || "")}</strong>
+        <span>${escaparHTML(r.ruta || "")} · ${r.fecha || ""} ${r.horario ? "· " + escaparHTML(r.horario) : ""}</span>
+        <span>Asientos: ${(r.asientos || []).join(", ")}</span>
+      </div>
+      <div class="item-acciones">
+        <span class="badge-estado badge-${r.estado || 'pendiente'}">${iconoEstado(r.estado)} ${r.estado || "pendiente"}</span>
+        <button class="btn btn-gris btn-sm" onclick="editarEstadoRapido('${r.codigo}')">✏️</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+function colorEstado(e){
+  return { pendiente:"var(--amarillo)", confirmada:"var(--verde-wa)", en_camino:"#3498db", completada:"#8e44ad", cancelada:"var(--rojo)" }[e] || "var(--azul-claro)";
+}
+function iconoEstado(e){
+  return { pendiente:"⏳", confirmada:"✅", en_camino:"🚌", completada:"🏁", cancelada:"❌" }[e] || "❓";
+}
+function editarEstadoRapido(codigo){
+  document.getElementById("estadoCodigo").value = codigo;
+  document.getElementById("estadoCodigo").scrollIntoView({behavior:"smooth"});
+  document.getElementById("estadoNuevo").focus();
+}
+
+/* ============================================================
+   ASIENTOS
+   ============================================================ */
+function inicializarAsientos(){
+  const sel = document.getElementById("selRuta");
+  if(!sel) return;
+  const actual = sel.value;
+  sel.innerHTML = `<option value="">— Selecciona —</option>` +
+    DATA.rutas.map(r => `<option value="${escaparHTML(r.ruta)}">${escaparHTML(r.ruta)} — ${escaparHTML(r.precio)}</option>`).join("");
+  if(actual) sel.value = actual;
+  const fechaInput = document.getElementById("selFecha");
+  if(fechaInput && !fechaInput.value) fechaInput.value = new Date().toISOString().slice(0,10);
+  cargarAsientos();
+  renderReservasAdmin();
+}
+
+function cargarAsientos(){
+  const ruta = document.getElementById("selRuta").value;
+  const fecha = document.getElementById("selFecha").value;
+  const horario = document.getElementById("selHorario").value.trim();
+  const cont = document.getElementById("asientosContainer");
+  const info = document.getElementById("infoOcupacion");
+
+  if(!ruta || !fecha){
+    cont.innerHTML = `<p style="text-align:center;color:#888;padding:20px;">Selecciona ruta y fecha.</p>`;
+    info.style.display = "none";
+    return;
+  }
+  const rutaObj = DATA.rutas.find(r => r.ruta === ruta);
+  const capacidad = Number(rutaObj?.capacidad) || 20;
+  const ocupados = getAsientosOcupados(ruta, fecha, horario);
+
+  let gridHTML = "";
+  for(let i=1;i<=capacidad;i++){
+    const ocupado = ocupados.includes(i);
+    gridHTML += `<button class="asiento-admin ${ocupado ? 'ocupado' : ''}" onclick="toggleAsiento(${i}, '${escapeAttr(ruta)}', '${fecha}', '${escapeAttr(horario)}')">${i}</button>`;
+  }
+  cont.innerHTML = `<div class="asientos-grid-admin">${gridHTML}</div>`;
+  info.style.display = "block";
+  info.innerHTML = `<strong>${escaparHTML(ruta)}</strong> · ${fecha}${horario ? " · " + escaparHTML(horario) : ""}<br>Capacidad: <strong>${capacidad}</strong> · Ocupados: <strong>${ocupados.length}</strong> · Libres: <strong>${capacidad - ocupados.length}</strong>`;
+}
+
+function getAsientosOcupados(ruta, fecha, horario){
+  const ocupados = new Set();
+  const h = (horario || "").trim();
+  (DATA.reservas || []).forEach(r => {
+    if(r.ruta === ruta && r.fecha === fecha && (r.horario || "").trim() === h && Array.isArray(r.asientos)){
+      r.asientos.forEach(a => ocupados.add(Number(a)));
+    }
+  });
+  (DATA.asientosOcupados || []).forEach(a => {
+    if(a.ruta === ruta && a.fecha === fecha && (a.horario || "").trim() === h) ocupados.add(Number(a.asiento));
+  });
+  return Array.from(ocupados).sort((x,y) => x-y);
+}
+
+async function toggleAsiento(num, ruta, fecha, horario){
+  if(!DATA.asientosOcupados) DATA.asientosOcupados = [];
+  const h = (horario || "").trim();
+  const idx = DATA.asientosOcupados.findIndex(a =>
+    a.ruta === ruta && a.fecha === fecha && (a.horario || "").trim() === h && Number(a.asiento) === num
+  );
+  if(idx >= 0){
+    if(!confirm(`¿Liberar el asiento ${num}?`)) return;
+    DATA.asientosOcupados.splice(idx, 1);
+    mostrarToast(`Asiento ${num} liberado`);
+  }else{
+    DATA.asientosOcupados.push({ ruta, fecha, horario: h, asiento: num, marcado: new Date().toISOString() });
+    mostrarToast(`Asiento ${num} ocupado`);
+  }
+  cargarAsientos();
+  renderReservasAdmin();
+  await guardarEnGitHub();
+}
+
+async function liberarTodosAsientos(){
+  const ruta = document.getElementById("selRuta").value;
+  const fecha = document.getElementById("selFecha").value;
+  const horario = document.getElementById("selHorario").value.trim();
+  if(!ruta || !fecha){ mostrarToast("Selecciona ruta y fecha", "error"); return; }
+  if(!confirm(`¿Liberar TODOS los asientos de ${ruta} · ${fecha}?`)) return;
+  const h = (horario || "").trim();
+  DATA.asientosOcupados = (DATA.asientosOcupados || []).filter(a =>
+    !(a.ruta === ruta && a.fecha === fecha && (a.horario || "").trim() === h)
+  );
+  cargarAsientos();
+  renderReservasAdmin();
+  await guardarEnGitHub();
+  mostrarToast("Todos los asientos liberados");
+}
+
+async function ocuparTodosAsientos(){
+  const ruta = document.getElementById("selRuta").value;
+  const fecha = document.getElementById("selFecha").value;
+  const horario = document.getElementById("selHorario").value.trim();
+  if(!ruta || !fecha){ mostrarToast("Selecciona ruta y fecha", "error"); return; }
+  if(!confirm(`¿Ocupar TODOS los asientos de ${ruta} · ${fecha}?`)) return;
+  const rutaObj = DATA.rutas.find(r => r.ruta === ruta);
+  const capacidad = Number(rutaObj?.capacidad) || 20;
+  const h = (horario || "").trim();
+  if(!DATA.asientosOcupados) DATA.asientosOcupados = [];
+  DATA.asientosOcupados = DATA.asientosOcupados.filter(a =>
+    !(a.ruta === ruta && a.fecha === fecha && (a.horario || "").trim() === h)
+  );
+  for(let i=1;i<=capacidad;i++){
+    DATA.asientosOcupados.push({ ruta, fecha, horario: h, asiento: i, marcado: new Date().toISOString() });
+  }
+  cargarAsientos();
+  renderReservasAdmin();
+  await guardarEnGitHub();
+  mostrarToast("Todos los asientos ocupados");
+}
+
+function renderReservasAdmin(){
+  const cont = document.getElementById("listaReservasAdmin");
+  if(!cont) return;
+  const reservas = DATA.reservas || [];
+  const marcados = DATA.asientosOcupados || [];
+
+  if(!reservas.length && !marcados.length){
+    cont.innerHTML = `<div class="vacio">No hay reservas ni asientos marcados todavía.</div>`;
+    return;
+  }
+  let html = "";
+
+  if(marcados.length){
+    const grupos = {};
+    marcados.forEach(a => {
+      const key = `${a.ruta}|${a.fecha}|${a.horario || ""}`;
+      if(!grupos[key]) grupos[key] = { ruta: a.ruta, fecha: a.fecha, horario: a.horario, asientos: [] };
+      grupos[key].asientos.push(Number(a.asiento));
+    });
+    html += `<h4 style="color:var(--azul);margin:10px 0 8px;font-size:.92rem;">Asientos marcados manualmente</h4>`;
+    html += Object.values(grupos).map(g => `
+      <div class="item" style="border-left-color:var(--azul-claro);">
+        <div class="info">
+          <strong>${escaparHTML(g.ruta)}</strong>
+          <span>${g.fecha}${g.horario ? " · " + escaparHTML(g.horario) : ""}</span>
+          <span>Asientos ocupados: ${g.asientos.sort((a,b)=>a-b).join(", ")}</span>
+        </div>
+        <div class="item-acciones">
+          <button class="btn btn-danger btn-sm" onclick="liberarGrupoAsientos('${escapeAttr(g.ruta)}', '${g.fecha}', '${escapeAttr(g.horario || "")}')">🗑️ Liberar</button>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  cont.innerHTML = html || `<div class="vacio">No hay asientos marcados manualmente.</div>`;
+}
+
+async function liberarGrupoAsientos(ruta, fecha, horario){
+  if(!confirm(`¿Liberar todos los asientos de ${ruta} · ${fecha}?`)) return;
+  const h = (horario || "").trim();
+  DATA.asientosOcupados = (DATA.asientosOcupados || []).filter(a =>
+    !(a.ruta === ruta && a.fecha === fecha && (a.horario || "").trim() === h)
+  );
+  cargarAsientos();
+  renderReservasAdmin();
+  await guardarEnGitHub();
+  mostrarToast("Asientos liberados");
+}
+
+/* ============================================================
+   RENDERS SECUNDARIOS
+   ============================================================ */
+function renderGuaguas(){
+  const cont = document.getElementById("listaGuaguas");
+  if(!DATA.guaguas.length){ cont.innerHTML = `<div class="vacio">No hay guaguas.</div>`; return; }
+  cont.innerHTML = DATA.guaguas.map(g => `
+    <div class="item">
+      ${g.foto ? `<img class="foto" src="${g.foto}">` : `<div class="foto placeholder">${g.icono || "🚌"}</div>`}
+      <div class="info"><strong>${g.icono || "🚌"} ${escaparHTML(g.nombre)}</strong><span>👥 ${escaparHTML(g.capacidad)}</span>${g.descripcion ? `<span>${escaparHTML(g.descripcion)}</span>` : ""}</div>
+      <div class="item-acciones">
+        <button class="btn btn-gris btn-sm" onclick="abrirEditar('guagua', ${g.id})">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="eliminarItem('guagua', ${g.id})">🗑️</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+function renderRutas(){
+  const cont = document.getElementById("listaRutas");
+  if(!DATA.rutas.length){ cont.innerHTML = `<div class="vacio">No hay rutas.</div>`; return; }
+  cont.innerHTML = DATA.rutas.map(r => `
+    <div class="item">
+      ${r.foto ? `<img class="foto" src="${r.foto}">` : `<div class="foto placeholder">🗺️</div>`}
+      <div class="info"><strong>${escaparHTML(r.ruta)}</strong><span>📍 ${escaparHTML(r.salida)} · 🕒 ${escaparHTML(r.horario)} · 💰 ${escaparHTML(r.precio)}</span><span>🪑 ${r.capacidad || 20} asientos</span></div>
+      <div class="item-acciones">
+        <button class="btn btn-gris btn-sm" onclick="abrirEditar('ruta', ${r.id})">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="eliminarItem('ruta', ${r.id})">🗑️</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+function renderSplash(){
+  const cont = document.getElementById("listaSplash");
+  if(!DATA.cardsSplash.length){ cont.innerHTML = `<div class="vacio">No hay tarjetas.</div>`; return; }
+  cont.innerHTML = DATA.cardsSplash.map(c => `
+    <div class="item" style="background:linear-gradient(135deg,var(--azul),var(--azul-claro));color:#fff;border-left-color:#fff;">
+      <div style="font-size:1.8rem;">${c.icono || "✨"}</div>
+      <div class="info" style="flex:1;"><strong style="color:#fff;">${escaparHTML(c.titulo)}</strong><span style="color:rgba(255,255,255,.9);">${escaparHTML(c.texto)}</span></div>
+      <div class="item-acciones">
+        <button class="btn btn-gris btn-sm" onclick="abrirEditar('splash', ${c.id})">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="eliminarItem('splash', ${c.id})">🗑️</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+function renderTestimonios(){
+  const cont = document.getElementById("listaTestimonios");
+  if(!DATA.testimonios.length){ cont.innerHTML = `<div class="vacio">No hay testimonios.</div>`; return; }
+  cont.innerHTML = DATA.testimonios.map(t => `
+    <div class="item">
+      <div class="info" style="flex:1;"><strong>${"★".repeat(t.estrellas || 5)} ${escaparHTML(t.autor)}</strong><span>"${escaparHTML(t.texto)}"</span></div>
+      <div class="item-acciones">
+        <button class="btn btn-gris btn-sm" onclick="abrirEditar('testimonio', ${t.id})">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="eliminarItem('testimonio', ${t.id})">🗑️</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+function renderFaqs(){
+  const cont = document.getElementById("listaFaqs");
+  if(!DATA.faqs.length){ cont.innerHTML = `<div class="vacio">No hay preguntas.</div>`; return; }
+  cont.innerHTML = DATA.faqs.map(f => `
+    <div class="item">
+      <div class="info" style="flex:1;"><strong>❓ ${escaparHTML(f.pregunta)}</strong><span>${escaparHTML(f.respuesta)}</span></div>
+      <div class="item-acciones">
+        <button class="btn btn-gris btn-sm" onclick="abrirEditar('faq', ${f.id})">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="eliminarItem('faq', ${f.id})">🗑️</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+function renderTodo(){
+  renderGuaguas();
+  renderRutas();
+  renderSplash();
+  renderTestimonios();
+  renderFaqs();
+  renderReservasAdmin();
+  renderListaEstados();
+  inicializarAsientos();
+  cargarConfigForm();
+  cargarNosotrosForm();
+  cargarLegalForm();
+  cargarLogoPreview();
+}
+
+/* ============================================================
+   BOTÓN FLOTANTE +, MODALES Y FORMULARIOS
+   ============================================================ */
+function abrirAddActual(){
+  if(tabActual === "guaguas") abrirFormGuagua(null);
+  else if(tabActual === "rutas") abrirFormRuta(null);
+  else if(tabActual === "splash") abrirFormSplash(null);
+  else if(tabActual === "testimonios") abrirFormTestimonio(null);
+  else if(tabActual === "faqs") abrirFormFaq(null);
+}
+function abrirEditar(tipo, id){
+  if(tipo === "guagua") abrirFormGuagua(id);
+  else if(tipo === "ruta") abrirFormRuta(id);
+  else if(tipo === "splash") abrirFormSplash(id);
+  else if(tipo === "testimonio") abrirFormTestimonio(id);
+  else if(tipo === "faq") abrirFormFaq(id);
+}
+function abrirModalForm(html){
+  document.getElementById("modalFormContenido").innerHTML = html;
+  document.getElementById("modalForm").classList.add("abierto");
+}
+function cerrarModalForm(){
+  document.getElementById("modalForm").classList.remove("abierto");
+  fotoTemporal = "";
+  editando = { tipo: null, id: null };
+}
+document.getElementById("modalForm").addEventListener("click", e => { if(e.target.id === "modalForm") cerrarModalForm(); });
+document.addEventListener("keydown", e => { if(e.key === "Escape") cerrarModalForm(); });
+
+function leerFoto(input, callback, maxSize = 800){
+  const file = input.files && input.files[0];
+  if(!file) return;
+  if(!file.type.startsWith("image/")){ mostrarToast("Selecciona una imagen", "error"); return; }
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      let w = img.width, h = img.height;
+      if(w > maxSize || h > maxSize){ const r = Math.min(maxSize/w, maxSize/h); w = Math.round(w*r); h = Math.round(h*r); }
+      const c = document.createElement("canvas"); c.width = w; c.height = h;
+      c.getContext("2d").drawImage(img, 0, 0, w, h);
+      callback(c.toDataURL("image/jpeg", 0.8));
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function previewFoto(dataUrl, id){
+  const cont = document.getElementById(id);
+  if(!cont) return;
+  cont.innerHTML = dataUrl ? `<img src="${dataUrl}">` : "🖼️";
+}
+
+function abrirFormGuagua(id){
+  const g = id ? DATA.guaguas.find(x => x.id === id) : null;
+  editando = { tipo: "guagua", id: id || null };
+  fotoTemporal = g ? (g.foto || "") : "";
+  abrirModalForm(`
+    <h3>${g ? "✏️ Editar" : "➕ Agregar"} Guagua</h3>
+    <div class="fila"><div><label>Nombre *</label><input id="fGNombre" value="${g ? escaparHTML(g.nombre) : ""}"></div><div><label>Capacidad *</label><input id="fGCapacidad" value="${g ? escaparHTML(g.capacidad) : ""}"></div></div>
+    <label>Descripción</label><input id="fGDesc" value="${g ? escaparHTML(g.descripcion) : ""}">
+    <label>Icono</label><input id="fGIcono" value="${g ? escaparHTML(g.icono || "🚌") : "🚌"}">
+    <label>Foto</label>
+    <div class="foto-input-wrap"><div class="foto-preview" id="fGFotoPreview"></div><button class="foto-btn" type="button" onclick="document.getElementById('fGFotoInput').click()">📷</button><input type="file" id="fGFotoInput" accept="image/*" style="display:none" onchange="leerFoto(this,d=>{fotoTemporal=d;previewFoto(d,'fGFotoPreview');})"></div>
+    <div class="acciones"><button class="btn btn-primary" onclick="guardarFormGuagua()">💾 Guardar</button><button class="btn btn-gris" onclick="cerrarModalForm()">Cancelar</button></div>
+  `);
+  previewFoto(fotoTemporal, "fGFotoPreview");
+}
+async function guardarFormGuagua(){
+  const nombre = document.getElementById("fGNombre").value.trim();
+  const capacidad = document.getElementById("fGCapacidad").value.trim();
+  if(!nombre || !capacidad){ mostrarToast("Completa nombre y capacidad", "error"); return; }
+  const obj = { nombre, capacidad, descripcion: document.getElementById("fGDesc").value.trim(), icono: document.getElementById("fGIcono").value.trim() || "🚌", foto: fotoTemporal };
+  if(editando.id){ Object.assign(DATA.guaguas.find(x => x.id === editando.id), obj); }
+  else{ DATA.guaguas.push({ id: nuevoId(DATA.guaguas), ...obj }); }
+  renderGuaguas(); cerrarModalForm(); await guardarEnGitHub();
+}
+
+function abrirFormRuta(id){
+  const r = id ? DATA.rutas.find(x => x.id === id) : null;
+  editando = { tipo: "ruta", id: id || null };
+  fotoTemporal = r ? (r.foto || "") : "";
+  abrirModalForm(`
+    <h3>${r ? "✏️ Editar" : "➕ Agregar"} Ruta</h3>
+    <div class="fila"><div><label>Ruta *</label><input id="fRNombre" value="${r ? escaparHTML(r.ruta) : ""}"></div><div><label>Salida *</label><input id="fRSalida" value="${r ? escaparHTML(r.salida) : ""}"></div></div>
+    <div class="fila"><div><label>Horario *</label><input id="fRHorario" value="${r ? escaparHTML(r.horario) : ""}"></div><div><label>Precio *</label><input id="fRPrecio" value="${r ? escaparHTML(r.precio) : ""}"></div></div>
+    <label>Capacidad de asientos</label><input id="fRCapacidad" type="number" min="1" value="${r ? (r.capacidad || 20) : 20}">
+    <label>Foto</label>
+    <div class="foto-input-wrap"><div class="foto-preview" id="fRFotoPreview"></div><button class="foto-btn" type="button" onclick="document.getElementById('fRFotoInput').click()">📷</button><input type="file" id="fRFotoInput" accept="image/*" style="display:none" onchange="leerFoto(this,d=>{fotoTemporal=d;previewFoto(d,'fRFotoPreview');})"></div>
+    <div class="acciones"><button class="btn btn-primary" onclick="guardarFormRuta()">💾 Guardar</button><button class="btn btn-gris" onclick="cerrarModalForm()">Cancelar</button></div>
+  `);
+  previewFoto(fotoTemporal, "fRFotoPreview");
+}
+async function guardarFormRuta(){
+  const ruta = document.getElementById("fRNombre").value.trim();
+  const salida = document.getElementById("fRSalida").value.trim();
+  const horario = document.getElementById("fRHorario").value.trim();
+  const precio = document.getElementById("fRPrecio").value.trim();
+  const capacidad = Number(document.getElementById("fRCapacidad").value) || 20;
+  if(!ruta || !salida || !horario || !precio){ mostrarToast("Completa todos los campos", "error"); return; }
+  const obj = { ruta, salida, horario, precio, capacidad, foto: fotoTemporal };
+  if(editando.id){ Object.assign(DATA.rutas.find(x => x.id === editando.id), obj); }
+  else{ DATA.rutas.push({ id: nuevoId(DATA.rutas), ...obj }); }
+  renderRutas(); cerrarModalForm(); await guardarEnGitHub();
+}
+
+function abrirFormSplash(id){
+  const c = id ? DATA.cardsSplash.find(x => x.id === id) : null;
+  editando = { tipo: "splash", id: id || null };
+  abrirModalForm(`
+    <h3>${c ? "✏️ Editar" : "➕ Agregar"} Tarjeta</h3>
+    <div class="fila"><div><label>Título *</label><input id="fSTitulo" value="${c ? escaparHTML(c.titulo) : ""}"></div><div><label>Icono *</label><input id="fSIcono" value="${c ? escaparHTML(c.icono || "🚐") : "🚐"}"></div></div>
+    <label>Texto *</label><input id="fSTexto" value="${c ? escaparHTML(c.texto) : ""}">
+    <div class="acciones"><button class="btn btn-primary" onclick="guardarFormSplash()">💾 Guardar</button><button class="btn btn-gris" onclick="cerrarModalForm()">Cancelar</button></div>
+  `);
+}
+async function guardarFormSplash(){
+  const titulo = document.getElementById("fSTitulo").value.trim();
+  const texto = document.getElementById("fSTexto").value.trim();
+  const icono = document.getElementById("fSIcono").value.trim() || "✨";
+  if(!titulo || !texto){ mostrarToast("Completa título y texto", "error"); return; }
+  const obj = { titulo, texto, icono };
+  if(editando.id){ Object.assign(DATA.cardsSplash.find(x => x.id === editando.id), obj); }
+  else{ DATA.cardsSplash.push({ id: nuevoId(DATA.cardsSplash), ...obj }); }
+  renderSplash(); cerrarModalForm(); await guardarEnGitHub();
+}
+
+function abrirFormTestimonio(id){
+  const t = id ? DATA.testimonios.find(x => x.id === id) : null;
+  editando = { tipo: "testimonio", id: id || null };
+  abrirModalForm(`
+    <h3>${t ? "✏️ Editar" : "➕ Agregar"} Testimonio</h3>
+    <label>Autor *</label><input id="fTAutor" value="${t ? escaparHTML(t.autor) : ""}">
+    <label>Texto *</label><textarea id="fTTexto">${t ? escaparHTML(t.texto) : ""}</textarea>
+    <div class="fila"><div><label>Estrellas</label><input id="fTEstrellas" type="number" min="1" max="5" value="${t ? (t.estrellas||5) : 5}"></div><div><label>Fecha</label><input id="fTFecha" value="${t ? escaparHTML(t.fecha||"") : ""}"></div></div>
+    <div class="acciones"><button class="btn btn-primary" onclick="guardarFormTestimonio()">💾 Guardar</button><button class="btn btn-gris" onclick="cerrarModalForm()">Cancelar</button></div>
+  `);
+}
+async function guardarFormTestimonio(){
+  const autor = document.getElementById("fTAutor").value.trim();
+  const texto = document.getElementById("fTTexto").value.trim();
+  const estrellas = Number(document.getElementById("fTEstrellas").value) || 5;
+  const fecha = document.getElementById("fTFecha").value.trim();
+  if(!autor || !texto){ mostrarToast("Completa autor y texto", "error"); return; }
+  const obj = { autor, texto, estrellas, fecha };
+  if(editando.id){ Object.assign(DATA.testimonios.find(x => x.id === editando.id), obj); }
+  else{ DATA.testimonios.push({ id: nuevoId(DATA.testimonios), ...obj }); }
+  renderTestimonios(); cerrarModalForm(); await guardarEnGitHub();
+}
+
+function abrirFormFaq(id){
+  const f = id ? DATA.faqs.find(x => x.id === id) : null;
+  editando = { tipo: "faq", id: id || null };
+  abrirModalForm(`
+    <h3>${f ? "✏️ Editar" : "➕ Agregar"} Pregunta</h3>
+    <label>Pregunta *</label><input id="fFPregunta" value="${f ? escaparHTML(f.pregunta) : ""}">
+    <label>Respuesta *</label><textarea id="fFRespuesta">${f ? escaparHTML(f.respuesta) : ""}</textarea>
+    <div class="acciones"><button class="btn btn-primary" onclick="guardarFormFaq()">💾 Guardar</button><button class="btn btn-gris" onclick="cerrarModalForm()">Cancelar</button></div>
+  `);
+}
+async function guardarFormFaq(){
+  const pregunta = document.getElementById("fFPregunta").value.trim();
+  const respuesta = document.getElementById("fFRespuesta").value.trim();
+  if(!pregunta || !respuesta){ mostrarToast("Completa pregunta y respuesta", "error"); return; }
+  const obj = { pregunta, respuesta };
+  if(editando.id){ Object.assign(DATA.faqs.find(x => x.id === editando.id), obj); }
+  else{ DATA.faqs.push({ id: nuevoId(DATA.faqs), ...obj }); }
+  renderFaqs(); cerrarModalForm(); await guardarEnGitHub();
+}
+
+async function eliminarItem(tipo, id){
+  if(!confirm("¿Eliminar este elemento?")) return;
+  if(tipo === "guagua"){ DATA.guaguas = DATA.guaguas.filter(x => x.id !== id); renderGuaguas(); }
+  else if(tipo === "ruta"){ DATA.rutas = DATA.rutas.filter(x => x.id !== id); renderRutas(); }
+  else if(tipo === "splash"){ DATA.cardsSplash = DATA.cardsSplash.filter(x => x.id !== id); renderSplash(); }
+  else if(tipo === "testimonio"){ DATA.testimonios = DATA.testimonios.filter(x => x.id !== id); renderTestimonios(); }
+  else if(tipo === "faq"){ DATA.faqs = DATA.faqs.filter(x => x.id !== id); renderFaqs(); }
+  await guardarEnGitHub();
+}
+
+/* ============================================================
+   CONFIG SITIO, NOSOTROS, LEGAL
+   ============================================================ */
+function cargarConfigForm(){
+  if(!DATA) return;
+  const c = DATA.config;
+  const set = (id, v) => { const el = document.getElementById(id); if(el) el.value = v || ""; };
+  set("cfgWhatsapp", c.whatsapp); set("cfgHeaderNombre", c.headerNombre || c.headerTitulo || "");
+  set("cfgHeaderLogo", c.headerLogo); set("cfgHeaderSub", c.headerSub);
+  set("cfgHeroTitulo", c.heroTitulo); set("cfgHeroTexto", c.heroTexto); set("cfgSplashSlogan", c.splashSlogan);
+  set("cfgInfo1Icono", c.info1Icono); set("cfgInfo1Titulo", c.info1Titulo); set("cfgInfo1Texto", c.info1Texto);
+  set("cfgInfo2Icono", c.info2Icono); set("cfgInfo2Titulo", c.info2Titulo); set("cfgInfo2Texto", c.info2Texto);
+  set("cfgInfo3Icono", c.info3Icono); set("cfgInfo3Titulo", c.info3Titulo); set("cfgInfo3Texto", c.info3Texto);
+}
+async function guardarConfig(){
+  const get = id => { const el = document.getElementById(id); return el ? el.value.trim() : ""; };
+  const nuevoNombre = get("cfgHeaderNombre");
+  DATA.config = { ...DATA.config,
+    whatsapp: get("cfgWhatsapp").replace(/[^\d]/g, ""),
+    headerNombre: nuevoNombre, headerTitulo: nuevoNombre,
+    headerLogo: get("cfgHeaderLogo"), headerSub: get("cfgHeaderSub"),
+    heroTitulo: get("cfgHeroTitulo"), heroTexto: get("cfgHeroTexto"),
+    splashSlogan: get("cfgSplashSlogan"),
+    info1Icono: get("cfgInfo1Icono"), info1Titulo: get("cfgInfo1Titulo"), info1Texto: get("cfgInfo1Texto"),
+    info2Icono: get("cfgInfo2Icono"), info2Titulo: get("cfgInfo2Titulo"), info2Texto: get("cfgInfo2Texto"),
+    info3Icono: get("cfgInfo3Icono"), info3Titulo: get("cfgInfo3Titulo"), info3Texto: get("cfgInfo3Texto")
+  };
+  await guardarEnGitHub();
+}
+
+function cargarLogoPreview(){
+  const c = DATA.config;
+  logoBase64 = c.logoUrl || "";
+  const prev = document.getElementById("logoPreview");
+  if(!prev) return;
+  if(logoBase64) prev.innerHTML = `<img src="${logoBase64}" alt="Logo">`;
+  else prev.textContent = c.headerLogo || "🚐";
+}
+function onLogoSelect(input){
+  leerFoto(input, (dataUrl) => {
+    logoBase64 = dataUrl;
+    document.getElementById("logoPreview").innerHTML = `<img src="${dataUrl}" alt="Logo">`;
+    mostrarToast("Logo cargado. Pulsa Guardar para aplicarlo.");
+  }, 400);
+}
+function quitarLogo(){
+  if(!confirm("¿Quitar el logo real?")) return;
+  logoBase64 = "";
+  document.getElementById("logoPreview").textContent = DATA.config.headerLogo || "🚐";
+}
+
+function cargarNosotrosForm(){
+  if(!DATA) return;
+  const c = DATA.config;
+  const ta = document.getElementById("cfgNosotrosTexto");
+  if(ta) ta.value = c.nosotrosTexto || "";
+  nosotrosFotoBase64 = c.nosotrosFoto || "";
+  const prev = document.getElementById("nosotrosFotoPreview");
+  if(prev){ prev.innerHTML = nosotrosFotoBase64 ? `<img src="${nosotrosFotoBase64}">` : "🖼️"; }
+  const stats = c.nosotrosStats || [];
+  const set = (id, v) => { const el = document.getElementById(id); if(el) el.value = v || ""; };
+  set("cfgStat1Num", stats[0]?.num); set("cfgStat1Lbl", stats[0]?.lbl);
+  set("cfgStat2Num", stats[1]?.num); set("cfgStat2Lbl", stats[1]?.lbl);
+  set("cfgStat3Num", stats[2]?.num); set("cfgStat3Lbl", stats[2]?.lbl);
+}
+function onNosotrosFoto(input){
+  leerFoto(input, (dataUrl) => {
+    nosotrosFotoBase64 = dataUrl;
+    previewFoto(dataUrl, "nosotrosFotoPreview");
+  });
+}
+async function guardarNosotros(){
+  const get = id => { const el = document.getElementById(id); return el ? el.value.trim() : ""; };
+  DATA.config.logoUrl = logoBase64;
+  DATA.config.nosotrosTexto = get("cfgNosotrosTexto");
+  DATA.config.nosotrosFoto = nosotrosFotoBase64;
+  DATA.config.nosotrosStats = [
+    { num: get("cfgStat1Num"), lbl: get("cfgStat1Lbl") },
+    { num: get("cfgStat2Num"), lbl: get("cfgStat2Lbl") },
+    { num: get("cfgStat3Num"), lbl: get("cfgStat3Lbl") }
+  ].filter(s => s.num || s.lbl);
+  await guardarEnGitHub();
+}
+
+function cargarLegalForm(){
+  if(!DATA) return;
+  const c = DATA.config;
+  const set = (id, v) => { const el = document.getElementById(id); if(el) el.value = v || ""; };
+  set("cfgPrivacidad", c.privacidad); set("cfgTerminos", c.terminos);
+  set("cfgPoliticaCancelacion", c.politicaCancelacion);
+  set("cfgSellos", (c.sellos || []).join("\n"));
+}
+async function guardarLegal(){
+  const get = id => { const el = document.getElementById(id); return el ? el.value.trim() : ""; };
+  DATA.config.privacidad = get("cfgPrivacidad");
+  DATA.config.terminos = get("cfgTerminos");
+  DATA.config.politicaCancelacion = get("cfgPoliticaCancelacion");
+  DATA.config.sellos = get("cfgSellos").split("\n").map(s => s.trim()).filter(Boolean);
+  await guardarEnGitHub();
+}
+
+/* ============================================================
+   VISTA PREVIA
+   ============================================================ */
+function abrirVistaPrevia(){
+  renderVistaPrevia();
+  document.getElementById("vistaPrevia").style.display = "block";
+  document.body.style.overflow = "hidden";
+}
+function cerrarVistaPrevia(){
+  document.getElementById("vistaPrevia").style.display = "none";
+  document.body.style.overflow = "";
+}
+function renderVistaPrevia(){
+  if(!DATA) return;
+  const c = DATA.config;
+  const cont = document.getElementById("vistaPreviaContenido");
+  const logo = c.logoUrl ? `<img src="${c.logoUrl}" style="height:1.2em;vertical-align:middle;">` : (c.headerLogo || "🚐");
+  const guaguasHTML = (DATA.guaguas || []).map(g => `
+    <div style="background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,.12);">
+      ${g.foto ? `<img src="${g.foto}" style="width:100%;height:170px;object-fit:cover;">` : `<div style="width:100%;height:170px;display:flex;align-items:center;justify-content:center;font-size:3rem;background:#eef0f5;">${g.icono||"🚌"}</div>`}
+      <div style="padding:14px 18px;"><h3 style="color:#0b3d91;">${g.icono||"🚌"} ${escaparHTML(g.nombre)}</h3><p style="font-size:.88rem;color:#555;">👥 ${escaparHTML(g.capacidad)}</p></div>
+    </div>`).join("");
+  const rutasHTML = (DATA.rutas || []).map(r => `
+    <div style="background:#fff;border-radius:14px;padding:14px 18px;box-shadow:0 6px 20px rgba(0,0,0,.12);margin-bottom:10px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+      ${r.foto ? `<img src="${r.foto}" style="width:70px;height:60px;border-radius:8px;object-fit:cover;">` : `<div style="width:70px;height:60px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:#eef0f5;font-size:2rem;">🗺️</div>`}
+      <div style="flex:1;min-width:150px;"><strong style="color:#0b3d91;">${escaparHTML(r.ruta)}</strong><div style="font-size:.82rem;color:#666;">📍 ${escaparHTML(r.salida)} · 🕒 ${escaparHTML(r.horario)}</div></div>
+      <div style="font-weight:800;color:#25D366;">${escaparHTML(r.precio)}</div>
+    </div>`).join("");
+  cont.innerHTML = `
+    <div style="background:linear-gradient(135deg,#0b3d91,#1e6fd9);color:#fff;padding:22px 20px;text-align:center;">
+      <h1 style="font-size:1.9rem;">${logo} ${escaparHTML(c.headerNombre || "Viajes Perdomo")}</h1>
+      <p style="opacity:.9;margin-top:4px;">${escaparHTML(c.headerSub || "")}</p>
+    </div>
+    <div style="max-width:1100px;margin:auto;padding:26px 18px;">
+      <div style="background:#fff;border-radius:14px;padding:30px;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.12);margin-bottom:22px;">
+        <h2 style="color:#0b3d91;">${escaparHTML(c.heroTitulo || "")}</h2>
+        <p style="color:#555;margin:8px 0 18px;">${escaparHTML(c.heroTexto || "")}</p>
+      </div>
+      <h2 style="color:#0b3d91;margin:20px 0 14px;">Nuestras Guaguas</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;margin-bottom:22px;">${guaguasHTML}</div>
+      <h2 style="color:#0b3d91;margin:20px 0 14px;">Rutas</h2>
+      ${rutasHTML}
+    </div>
+    <div style="background:#0b3d91;color:#fff;text-align:center;padding:26px;font-size:.88rem;margin-top:20px;">© ${new Date().getFullYear()} Viajes Perdomo</div>
+  `;
+}
+
+/* ============================================================
+   INICIO
+   ============================================================ */
+(async function init(){
+  const tieneConfig = cargarConfigGitHub();
+  if(tieneConfig && ghConfig){
+    actualizarEstadoConexion("loading", "Cargando datos...");
+    try{
+      const ok = await leerDatosDeGitHub();
+      actualizarEstadoConexion("ok", "Conectado a " + ghConfig.owner + "/" + ghConfig.repo);
+    }catch(e){
+      actualizarEstadoConexion("error", "Error: " + e.message);
+      DATA = JSON.parse(JSON.stringify(DEFAULT_DATA));
+      renderTodo();
+    }
+  }else{
+    DATA = JSON.parse(JSON.stringify(DEFAULT_DATA));
+    renderTodo();
+    actualizarEstadoConexion("", "Configura tu token en la pestaña 🔑 GitHub");
+  }
+  // Leer enlace pendiente
+  mostrarEnlacePendiente();
+  if(enlacePendiente){
+    cambiarTab("enlace", document.querySelector('[data-tab="enlace"]'));
+  }
+})();
+</script>
+</body>
+</html>
