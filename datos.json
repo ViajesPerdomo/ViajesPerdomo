@@ -98,6 +98,15 @@
       "precio": "20,000 cup",
       "capacidad": 45,
       "foto": ""
+    },
+    {
+      "id": 6,
+      "ruta": "La Habana - Pinar del Rio",
+      "salida": "Calle \"peñeira\" entre calle \"clavel\"  y \"Mariano\" , el cerro. A dos cuadras de \"ayestaran\" . \"Parque piñeira\"",
+      "horario": "09:00 am",
+      "precio": "3,000 cup",
+      "capacidad": 20,
+      "foto": ""
     }
   ],
   "cardsSplash": [
