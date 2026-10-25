@@ -89,6 +89,15 @@
       "precio": "20,000 cup",
       "capacidad": 45,
       "foto": ""
+    },
+    {
+      "id": 5,
+      "ruta": "La Habana - Santiago",
+      "salida": "Calle \"peñeira\" entre calle \"clavel\"  y \"Mariano\" , el cerro. A dos cuadras de \"ayestaran\" . \"Parque piñeira\"",
+      "horario": "2 pm",
+      "precio": "20,000 cup",
+      "capacidad": 45,
+      "foto": ""
     }
   ],
   "cardsSplash": [
