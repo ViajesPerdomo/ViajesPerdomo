@@ -107,6 +107,15 @@
       "precio": "3,000 cup",
       "capacidad": 20,
       "foto": ""
+    },
+    {
+      "id": 7,
+      "ruta": "Pinar del Rio - Habana",
+      "salida": "-",
+      "horario": "09:00 am",
+      "precio": "3,000 cup",
+      "capacidad": 45,
+      "foto": ""
     }
   ],
   "cardsSplash": [
