@@ -45,14 +45,6 @@
   },
   "guaguas": [
     {
-      "id": 2,
-      "icono": "🚐",
-      "nombre": "Minibús Hyundai",
-      "capacidad": "20 pasajeros",
-      "descripcion": "Ideal para rutas cortas. Música y cargadores USB.",
-      "foto": ""
-    },
-    {
       "id": 3,
       "icono": "🚍",
       "nombre": "Autobús Yutong",
