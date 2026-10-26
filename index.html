@@ -1,0 +1,1513 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Viajes Perdomo - Reservas por WhatsApp</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0b3d91">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Viajes Perdomo">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<script src="qrcode.min.js"></script>
+<style>
+  :root{--azul:#0b3d91;--azul-claro:#1e6fd9;--verde-wa:#25D366;--rojo:#e74c3c;--amarillo:#f39c12;--gris:#f4f6fb;--texto:#1a1a1a;--sombra:0 6px 20px rgba(0,0,0,.12);--radio:14px;}
+  *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;}
+  body{background:var(--gris);color:var(--texto);line-height:1.5;}
+  body.modo-oscuro{--gris:#12151c;--texto:#e8ecf4;--sombra:0 6px 20px rgba(0,0,0,.4);}
+  body.modo-oscuro header, body.modo-oscuro nav{color:#e8ecf4;}
+  body.modo-oscuro .card, body.modo-oscuro .info-card, body.modo-oscuro .testimonio, body.modo-oscuro .faq-item, body.modo-oscuro .faq-consultar, body.modo-oscuro .hero, body.modo-oscuro .ruta-card, body.modo-oscuro .modal, body.modo-oscuro .panel-lateral, body.modo-oscuro .legal-box, body.modo-oscuro .login-box{background:#1c2130;color:#e8ecf4;}
+  body.modo-oscuro .card h3, body.modo-oscuro .info-card h3, body.modo-oscuro .ruta-nombre, body.modo-oscuro .faq-pregunta, body.modo-oscuro .login-box h2{color:#a9c8ff;}
+  body.modo-oscuro nav{background:#1c2130;}
+  body.modo-oscuro nav button{color:#a9c8ff;}
+  body.modo-oscuro nav button.activo{background:var(--azul-claro);color:#fff;}
+  a{text-decoration:none;color:inherit;}
+
+  #loginScreen{position:fixed;inset:0;z-index:10000;background:linear-gradient(135deg,var(--azul),var(--azul-claro) 60%,#4a9cff);display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto;}
+  .login-box{background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.3);padding:30px 26px;width:100%;max-width:400px;}
+  .login-logo{text-align:center;font-size:3rem;margin-bottom:6px;}
+  .login-titulo{text-align:center;font-size:1.4rem;font-weight:800;color:var(--azul);margin-bottom:4px;}
+  .login-sub{text-align:center;font-size:.85rem;color:#666;margin-bottom:20px;}
+  .login-tabs{display:flex;gap:6px;margin-bottom:16px;background:var(--gris);padding:4px;border-radius:30px;}
+  .login-tabs button{flex:1;padding:10px;border:none;border-radius:30px;font-weight:700;font-size:.85rem;cursor:pointer;background:transparent;color:var(--azul);transition:.2s;}
+  .login-tabs button.activo{background:var(--azul);color:#fff;}
+  .login-box label{display:block;font-size:.82rem;font-weight:600;margin:10px 0 4px;color:#333;}
+  .login-box input{width:100%;padding:11px 12px;border:1px solid #d5dbe8;border-radius:8px;font-size:.92rem;font-family:inherit;}
+  .login-box .acciones{display:flex;flex-direction:column;gap:8px;margin-top:16px;}
+  .login-box .btn-login{background:var(--azul);color:#fff;border:none;padding:12px;border-radius:30px;font-weight:700;font-size:.92rem;cursor:pointer;transition:.2s;}
+  .login-box .btn-login:hover{background:var(--azul-claro);}
+  .login-box .btn-login:disabled{opacity:.6;cursor:not-allowed;}
+  .login-msg{font-size:.82rem;padding:10px;border-radius:8px;margin-top:10px;text-align:center;}
+  .login-msg.ok{background:#e6ffef;color:#1a9c48;}
+  .login-msg.error{background:#ffe8e8;color:#c0392b;}
+  .login-recordar{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:.85rem;color:#444;}
+  .login-recordar input{width:auto;margin:0;}
+
+  #splash{position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,var(--azul),var(--azul-claro) 60%,#4a9cff);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;overflow:hidden;transition:opacity .8s ease, visibility .8s ease;}
+  #splash.oculto{opacity:0;visibility:hidden;pointer-events:none;}
+  .splash-logo{font-size:clamp(4rem,12vw,7rem);line-height:1;filter:drop-shadow(0 8px 24px rgba(0,0,0,.35));animation:flotar 3s ease-in-out infinite;}
+  .splash-logo img{width:1em;height:1em;object-fit:contain;}
+  @keyframes flotar{0%,100%{transform:translateY(0);}50%{transform:translateY(-12px);}}
+  .splash-nombre{font-size:clamp(2rem,7vw,3.4rem);font-weight:800;letter-spacing:2px;margin-top:14px;text-align:center;text-shadow:0 4px 18px rgba(0,0,0,.35);animation:aparecerNombre 1s ease both;}
+  .splash-slogan{font-size:clamp(.85rem,2.5vw,1.05rem);opacity:.9;margin-top:8px;letter-spacing:1px;}
+  @keyframes aparecerNombre{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+  .splash-carrusel{position:relative;width:100%;max-width:760px;height:230px;margin-top:38px;perspective:1200px;display:flex;align-items:center;justify-content:center;}
+  .carrusel-pista{position:relative;width:100%;height:100%;transform-style:preserve-3d;}
+  .carrusel-card{position:absolute;top:50%;left:50%;width:240px;height:170px;margin:-85px 0 0 -120px;border-radius:16px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.35);backdrop-filter:blur(8px);box-shadow:0 12px 40px rgba(0,0,0,.3);padding:16px;display:flex;flex-direction:column;gap:6px;justify-content:center;transition:transform 1.6s cubic-bezier(.22,.61,.36,1), opacity 1.6s ease, filter 1.6s ease;text-align:center;}
+  .carrusel-card .cc-icono{font-size:2rem;}
+  .carrusel-card .cc-titulo{font-size:1rem;font-weight:800;color:#fff;}
+  .carrusel-card .cc-texto{font-size:.8rem;color:rgba(255,255,255,.9);line-height:1.3;}
+  .splash-barra-wrap{width:min(420px,80%);height:10px;border-radius:20px;background:rgba(255,255,255,.25);margin-top:34px;overflow:hidden;}
+  .splash-barra{height:100%;width:0%;border-radius:20px;background:linear-gradient(90deg,#a7ffb8,var(--verde-wa));box-shadow:0 0 14px rgba(37,211,102,.8);transition:width .12s linear;}
+  .splash-texto-carga{margin-top:10px;font-size:.82rem;opacity:.85;}
+
+  header{background:linear-gradient(135deg,var(--azul),var(--azul-claro));color:#fff;padding:22px 20px;text-align:center;position:relative;}
+  header h1{font-size:1.7rem;letter-spacing:.5px;display:flex;align-items:center;justify-content:center;gap:8px;}
+  header h1 img{height:1em;width:auto;max-width:1em;object-fit:contain;}
+  header p{opacity:.9;font-size:.85rem;margin-top:4px;}
+  .menu-toggle{position:absolute;left:14px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;width:42px;height:42px;border-radius:12px;cursor:pointer;font-size:1.3rem;display:flex;align-items:center;justify-content:center;}
+  .notif-toggle{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;width:42px;height:42px;border-radius:12px;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;}
+  #notifContador{position:absolute;top:-4px;right:-4px;background:var(--rojo);color:#fff;font-size:.65rem;font-weight:800;min-width:18px;height:18px;border-radius:50%;display:none;align-items:center;justify-content:center;padding:0 4px;}
+  nav{background:#fff;display:flex;justify-content:center;gap:8px;padding:12px;box-shadow:0 2px 10px rgba(0,0,0,.06);position:sticky;top:0;z-index:50;flex-wrap:wrap;}
+  nav button{padding:10px 18px;border-radius:30px;font-weight:600;font-size:.9rem;color:var(--azul);border:none;background:transparent;cursor:pointer;transition:.2s;}
+  nav button:hover,nav button.activo{background:var(--azul);color:#fff;}
+  .panel-lateral{position:fixed;top:0;left:-320px;width:300px;height:100vh;background:#fff;box-shadow:4px 0 24px rgba(0,0,0,.2);z-index:300;transition:left .3s ease;display:flex;flex-direction:column;}
+  .panel-lateral.abierto{left:0;}
+  .panel-lateral .panel-header{padding:20px;background:linear-gradient(135deg,var(--azul),var(--azul-claro));color:#fff;display:flex;justify-content:space-between;align-items:center;}
+  .panel-lateral .panel-cerrar{background:none;border:none;color:#fff;font-size:1.5rem;cursor:pointer;}
+  .panel-lateral .panel-body{padding:14px;overflow-y:auto;flex:1;}
+  .panel-lateral .panel-item{display:flex;align-items:center;gap:12px;width:100%;padding:14px 16px;border-radius:10px;border:none;background:transparent;cursor:pointer;font-size:.92rem;font-weight:600;color:var(--texto);transition:.2s;text-align:left;margin-bottom:6px;}
+  .panel-lateral .panel-item:hover{background:var(--gris);}
+  .panel-lateral .panel-separador{height:1px;background:#eef0f5;margin:10px 0;}
+  .panel-lateral .panel-user{padding:14px;background:var(--gris);border-radius:10px;margin-bottom:10px;font-size:.85rem;}
+  .panel-lateral .panel-user strong{color:var(--azul);display:block;}
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:290;opacity:0;visibility:hidden;transition:.3s;}
+  .overlay.visible{opacity:1;visibility:visible;}
+
+  .vista{display:none;}
+  .vista.activa{display:block;animation:aparecer .25s ease;}
+  @keyframes aparecer{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  .contenedor{max-width:1100px;margin:auto;padding:26px 18px 120px;}
+  h2.seccion{font-size:1.6rem;color:var(--azul);margin:10px 0 6px;border-left:6px solid var(--azul-claro);padding-left:12px;}
+  .subtitulo{color:#555;font-size:.95rem;margin-bottom:20px;padding-left:18px;}
+
+  .hero{background:#fff;border-radius:var(--radio);box-shadow:var(--sombra);padding:30px 24px;text-align:center;margin-bottom:22px;}
+  .hero h2{color:var(--azul);font-size:1.5rem;margin-bottom:8px;}
+  .hero p{color:#555;max-width:640px;margin:0 auto 18px;}
+  .hero .acciones-hero{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+  .btn-hero{padding:12px 22px;border-radius:30px;font-weight:700;font-size:.95rem;border:none;cursor:pointer;transition:.2s;}
+  .btn-hero.primario{background:var(--azul);color:#fff;}
+  .btn-hero.secundario{background:#e8ecf4;color:var(--azul);}
+  .info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;}
+  .info-card{background:#fff;border-radius:var(--radio);box-shadow:var(--sombra);padding:20px;text-align:center;}
+  .info-card .icono{font-size:2rem;margin-bottom:8px;}
+  .info-card h3{color:var(--azul);font-size:1.05rem;margin-bottom:4px;}
+  .info-card p{font-size:.88rem;color:#555;}
+  .nosotros{background:#fff;border-radius:var(--radio);box-shadow:var(--sombra);padding:24px;}
+  .nosotros-flex{display:flex;gap:20px;align-items:center;flex-wrap:wrap;}
+  .nosotros-foto{width:130px;height:130px;border-radius:50%;object-fit:cover;background:#eef0f5;display:flex;align-items:center;justify-content:center;font-size:3rem;color:#bcc6d8;flex-shrink:0;}
+  .nosotros-texto{flex:1;min-width:240px;font-size:.92rem;color:#444;line-height:1.7;}
+  .nosotros-stats{display:flex;gap:18px;flex-wrap:wrap;margin-top:14px;}
+  .nosotros-stats .stat{background:var(--gris);border-radius:10px;padding:10px 16px;text-align:center;}
+  .nosotros-stats .stat .num{font-size:1.3rem;font-weight:800;color:var(--azul);}
+  .nosotros-stats .stat .lbl{font-size:.75rem;color:#666;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;}
+  .card{background:#fff;border-radius:var(--radio);box-shadow:var(--sombra);padding:0 0 18px 0;display:flex;flex-direction:column;gap:10px;overflow:hidden;transition:transform .2s;cursor:pointer;}
+  .card:hover{transform:translateY(-4px);}
+  .card .foto{width:100%;height:170px;object-fit:cover;background:#eef0f5;display:flex;align-items:center;justify-content:center;font-size:3rem;color:#bcc6d8;}
+  .card-body{padding:0 18px;display:flex;flex-direction:column;gap:8px;}
+  .card h3{color:var(--azul);font-size:1.15rem;}
+  .card .detalle{font-size:.9rem;color:#555;}
+  .card .card-btn{background:var(--verde-wa);color:#fff;border:none;padding:10px;border-radius:30px;font-weight:700;font-size:.88rem;cursor:pointer;margin:6px 18px 0;}
+  .rutas-lista{display:flex;flex-direction:column;gap:14px;}
+  .ruta-card{background:#fff;border-radius:var(--radio);box-shadow:var(--sombra);display:grid;grid-template-columns:90px 2fr 1fr 1fr 1fr auto;align-items:center;gap:14px;padding:14px 18px;border-left:5px solid var(--azul-claro);transition:transform .2s,box-shadow .2s;cursor:pointer;}
+  .ruta-card:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(0,0,0,.16);}
+  .ruta-card .ruta-foto{width:90px;height:66px;border-radius:10px;object-fit:cover;background:#eef0f5;display:flex;align-items:center;justify-content:center;font-size:2rem;color:#bcc6d8;flex-shrink:0;}
+  .ruta-card .ruta-nombre{font-weight:800;color:var(--azul);font-size:1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .ruta-card .ruta-col{font-size:.85rem;color:#444;display:flex;flex-direction:column;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .ruta-card .ruta-col-label{font-size:.7rem;text-transform:uppercase;color:#8a93a6;font-weight:700;}
+  .ruta-card .ruta-col-valor{font-size:.9rem;font-weight:600;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .ruta-card .ruta-precio{font-size:1.05rem;font-weight:800;color:var(--verde-wa);text-align:right;}
+  .ruta-card .ruta-btn{background:var(--verde-wa);color:#fff;border:none;padding:8px 14px;border-radius:30px;font-weight:700;font-size:.82rem;cursor:pointer;}
+  .ruta-card .ruta-disponibles{font-size:.72rem;color:var(--amarillo);font-weight:700;margin-top:2px;}
+  .ruta-card .ruta-disponibles.agotado{color:var(--rojo);}
+  @media (max-width:900px){.ruta-card{grid-template-columns:80px 1fr 1fr auto;}.ruta-card .ruta-foto{width:80px;height:100%;min-height:80px;}.ruta-card .ruta-precio{text-align:left;}}
+  @media (max-width:520px){.ruta-card{grid-template-columns:70px 1fr auto;}.ruta-card .ruta-foto{width:70px;height:70px;align-self:start;}.ruta-card .ruta-nombre{white-space:normal;line-height:1.3;}}
+  .btn{padding:11px 20px;border-radius:30px;border:none;cursor:pointer;font-weight:700;font-size:.9rem;transition:.2s;}
+  .btn-gris{background:#e8ecf4;color:#333;}
+  .btn-primary{background:var(--azul);color:#fff;}
+  .btn-danger{background:var(--rojo);color:#fff;}
+  .btn-wa{display:inline-flex;align-items:center;gap:8px;justify-content:center;background:var(--verde-wa);color:#fff;font-weight:700;font-size:.92rem;padding:12px 20px;border-radius:30px;box-shadow:0 4px 12px rgba(37,211,102,.4);border:none;cursor:pointer;}
+  .btn-wa svg{width:18px;height:18px;fill:#fff;}
+  .modal-fondo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:400;align-items:center;justify-content:center;padding:16px;}
+  .modal-fondo.abierto{display:flex;}
+  .modal{background:#fff;border-radius:16px;max-width:720px;width:100%;max-height:92vh;overflow-y:auto;padding:24px;position:relative;}
+  .modal h3{color:var(--azul);margin-bottom:16px;}
+  .cerrar{position:absolute;top:14px;right:16px;background:none;border:none;font-size:1.5rem;cursor:pointer;color:#888;}
+  .modal label{display:block;font-size:.85rem;font-weight:600;margin:10px 0 4px;color:#333;}
+  .modal input,.modal select,.modal textarea{width:100%;padding:10px 12px;border:1px solid #d5dbe8;border-radius:8px;font-size:.9rem;font-family:inherit;}
+  .modal textarea{resize:vertical;min-height:70px;}
+  .modal .fila{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .modal .acciones{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;}
+  .form-reserva .aviso{background:#eef6ff;border-left:4px solid var(--azul-claro);padding:10px 14px;border-radius:8px;font-size:.85rem;color:#334;margin-bottom:8px;}
+  .asientos-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-width:280px;margin:8px auto;}
+  .asiento{width:100%;aspect-ratio:1;border-radius:8px;border:2px solid #d5dbe8;background:#fff;color:#333;font-weight:700;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;}
+  .asiento.ocupado{background:#e8ecf4;color:#aaa;cursor:not-allowed;text-decoration:line-through;}
+  .asiento.seleccionado{background:var(--azul);color:#fff;border-color:var(--azul);}
+  .asiento.libre{background:#f0fff4;border-color:#a7e6b8;}
+  .asientos-leyenda{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:10px;font-size:.78rem;color:#666;}
+  .asientos-leyenda .cuadro{width:14px;height:14px;border-radius:4px;border:1px solid #d5dbe8;display:inline-block;}
+  .asientos-leyenda .cuadro.libre{background:#f0fff4;border-color:#a7e6b8;}
+  .asientos-leyenda .cuadro.ocupado{background:#e8ecf4;}
+  .asientos-leyenda .cuadro.sel{background:var(--azul);border-color:var(--azul);}
+  .codigo-reserva{background:linear-gradient(135deg,var(--azul),var(--azul-claro));color:#fff;border-radius:12px;padding:16px;text-align:center;margin:12px 0;}
+  .codigo-reserva .cr-label{font-size:.75rem;text-transform:uppercase;letter-spacing:1px;opacity:.85;}
+  .codigo-reserva .cr-codigo{font-size:1.6rem;font-weight:800;letter-spacing:2px;font-family:monospace;margin-top:4px;}
+  .codigo-reserva .cr-info{font-size:.78rem;opacity:.9;margin-top:8px;}
+  .testimonios-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;}
+  .testimonio{background:#fff;border-radius:var(--radio);box-shadow:var(--sombra);padding:18px;display:flex;flex-direction:column;gap:8px;}
+  .testimonio .estrellas{color:#f5b301;font-size:1rem;letter-spacing:2px;}
+  .testimonio .texto{font-size:.9rem;color:#333;font-style:italic;}
+  .testimonio .autor{font-size:.82rem;color:var(--azul);font-weight:700;margin-top:4px;}
+  .testimonio .fecha{font-size:.75rem;color:#888;}
+  .faq-lista{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
+  .faq-item{background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);overflow:hidden;}
+  .faq-pregunta{padding:16px 18px;font-weight:700;color:var(--azul);cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:.95rem;}
+  .faq-pregunta .flecha{transition:.2s;color:#888;font-size:1.1rem;}
+  .faq-item.abierto .flecha{transform:rotate(180deg);}
+  .faq-respuesta{max-height:0;overflow:hidden;transition:max-height .3s ease;padding:0 18px;font-size:.88rem;color:#555;line-height:1.6;}
+  .faq-item.abierto .faq-respuesta{max-height:400px;padding:0 18px 16px;}
+  .faq-consultar{background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);padding:20px;margin-top:14px;}
+  .faq-consultar h3{color:var(--azul);font-size:1.05rem;margin-bottom:10px;}
+  .faq-consultar textarea{width:100%;padding:10px 12px;border:1px solid #d5dbe8;border-radius:8px;font-size:.9rem;font-family:inherit;resize:vertical;min-height:80px;}
+  .legal-box{background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);padding:20px;margin-bottom:16px;}
+  .legal-box h2{color:var(--azul);font-size:1.2rem;margin-bottom:10px;}
+  .legal-box h3{color:var(--azul);font-size:1rem;margin:14px 0 6px;}
+  .legal-box p,.legal-box li{font-size:.88rem;color:#444;line-height:1.6;}
+  .legal-box ul{padding-left:20px;margin-top:6px;}
+  .sello-confianza{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;}
+  .sello{background:#e6ffef;color:#1a9c48;padding:8px 14px;border-radius:30px;font-size:.8rem;font-weight:700;}
+  .referidos-box{background:linear-gradient(135deg,var(--azul),var(--azul-claro));color:#fff;border-radius:var(--radio);padding:24px;margin-top:26px;text-align:center;}
+  .referidos-box h2{font-size:1.3rem;margin-bottom:8px;}
+  .referidos-box p{font-size:.9rem;opacity:.9;max-width:600px;margin:0 auto 16px;}
+  .referidos-box .ref-botones{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+  .referidos-box .ref-btn{background:#fff;color:var(--azul);border:none;padding:12px 20px;border-radius:30px;font-weight:700;font-size:.9rem;cursor:pointer;}
+  .referidos-box .ref-btn.ghost{background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.5);}
+  .estado-conexion{position:fixed;top:12px;right:12px;z-index:150;padding:8px 14px;border-radius:30px;font-size:.78rem;font-weight:700;display:flex;align-items:center;gap:6px;box-shadow:0 4px 12px rgba(0,0,0,.15);}
+  .estado-conexion .dot{width:9px;height:9px;border-radius:50%;}
+  .estado-conexion.online{background:#e6ffef;color:#1a9c48;}
+  .estado-conexion.online .dot{background:#1a9c48;}
+  .estado-conexion.inestable{background:#fff5e0;color:#a86f00;}
+  .estado-conexion.inestable .dot{background:#f39c12;animation:pulso 1s infinite;}
+  .estado-conexion.offline{background:#ffe8e8;color:#c0392b;}
+  .estado-conexion.offline .dot{background:#c0392b;}
+  @keyframes pulso{0%,100%{opacity:1;}50%{opacity:.3;}}
+  .wa-flotante{position:fixed;bottom:22px;left:22px;z-index:120;background:var(--verde-wa);width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(37,211,102,.5);border:none;cursor:pointer;}
+  .wa-flotante svg{width:28px;height:28px;fill:#fff;}
+  footer{background:var(--azul);color:#fff;text-align:center;padding:26px 16px;font-size:.88rem;}
+  footer a{color:#9fe6b0;font-weight:600;}
+  footer .footer-links{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:8px;font-size:.8rem;}
+  footer .footer-links button{background:none;border:none;color:#9fe6b0;cursor:pointer;font-size:.8rem;text-decoration:underline;}
+  #bannerInstalar{display:none;position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#fff;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.25);padding:14px 18px;z-index:150;max-width:380px;width:calc(100% - 32px);align-items:center;gap:12px;border:2px solid var(--azul-claro);}
+  #bannerInstalar.visible{display:flex;}
+  #bannerInstalar .bi-texto{flex:1;font-size:.85rem;}
+  #bannerInstalar .bi-texto strong{display:block;color:var(--azul);font-size:.92rem;}
+  #bannerInstalar .bi-btn{background:var(--azul);color:#fff;border:none;padding:8px 14px;border-radius:30px;font-weight:700;font-size:.82rem;cursor:pointer;}
+  #bannerInstalar .bi-cerrar{background:none;border:none;font-size:1.2rem;color:#888;cursor:pointer;}
+  .notif-item{background:#fff;border-radius:10px;padding:14px;margin-bottom:10px;border-left:4px solid var(--azul-claro);box-shadow:0 2px 8px rgba(0,0,0,.06);cursor:pointer;transition:.2s;}
+  .notif-item:hover{transform:translateX(2px);}
+  .notif-item.no-leida{background:#eef6ff;border-left-color:var(--azul);}
+  .notif-item.estado-confirmada{border-left-color:var(--verde-wa);}
+  .notif-item.estado-cancelada{border-left-color:var(--rojo);}
+  .notif-item.estado-en_camino{border-left-color:#3498db;}
+  .notif-item.estado-completada{border-left-color:#8e44ad;}
+  .notif-item.estado-pendiente{border-left-color:var(--amarillo);}
+  .notif-item .notif-titulo{font-weight:700;color:var(--azul);font-size:.92rem;}
+  .notif-item .notif-texto{font-size:.82rem;color:#555;margin-top:4px;}
+  .notif-item .notif-fecha{font-size:.72rem;color:#999;margin-top:4px;}
+  .notif-vacio{text-align:center;color:#888;padding:30px;font-size:.9rem;}
+  .qr-container{background:#f4f6fb;border-radius:10px;padding:14px;text-align:center;margin-top:12px;}
+  .qr-container canvas,.qr-container img{max-width:100%;height:auto;}
+  @media(max-width:600px){
+    header h1{font-size:1.4rem;}
+    .fila{grid-template-columns:1fr!important;}
+    nav button{padding:8px 12px;font-size:.82rem;}
+    .splash-carrusel{height:200px;margin-top:26px;}
+    .carrusel-card{width:200px;height:150px;margin:-75px 0 0 -100px;}
+    .modal{padding:18px;}
+    .estado-conexion{top:8px;right:8px;font-size:.7rem;padding:6px 10px;}
+  }
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">🚐</div>
+    <div class="login-titulo">Viajes Perdomo</div>
+    <div class="login-sub">Accede para reservar tu asiento</div>
+    <div class="login-tabs">
+      <button id="tabAcceder" class="activo" onclick="cambiarTabLogin('acceder')">Acceder</button>
+      <button id="tabCrear" onclick="cambiarTabLogin('crear')">Crear cuenta</button>
+    </div>
+
+    <div id="formAcceder">
+      <label>Teléfono *</label>
+      <input id="loginTelefono" type="tel" placeholder="Ej: +5351234567" inputmode="tel" autocomplete="tel">
+      <label>Contraseña *</label>
+      <input id="loginPassword" type="password" placeholder="Tu contraseña" autocomplete="current-password">
+      <div class="login-recordar">
+        <input type="checkbox" id="loginRecordar" checked>
+        <label for="loginRecordar" style="margin:0;font-weight:400;cursor:pointer;">Recordar sesión</label>
+      </div>
+      <div class="acciones">
+        <button class="btn-login" id="btnAcceder" onclick="hacerLogin()">Acceder</button>
+      </div>
+      <div id="msgLogin" class="login-msg" style="display:none;"></div>
+    </div>
+
+    <div id="formCrear" style="display:none;">
+      <label>Nombre *</label>
+      <input id="regNombre" placeholder="Ej: Kendry">
+      <label>Apellido *</label>
+      <input id="regApellido" placeholder="Ej: Pérez">
+      <label>Teléfono *</label>
+      <input id="regTelefono" type="tel" placeholder="Ej: +5351234567" inputmode="tel">
+      <label>Contraseña *</label>
+      <input id="regPassword" type="password" placeholder="Mínimo 4 caracteres">
+      <label>Confirmar contraseña *</label>
+      <input id="regPassword2" type="password" placeholder="Repite la contraseña">
+      <div class="acciones">
+        <button class="btn-login" id="btnCrear" onclick="hacerRegistro()">Crear cuenta y acceder</button>
+      </div>
+      <div id="msgRegistro" class="login-msg" style="display:none;"></div>
+    </div>
+  </div>
+</div>
+
+<div class="estado-conexion online" id="estadoConexion"><span class="dot"></span><span id="estadoTexto">En línea</span></div>
+
+<div id="splash" style="display:none;">
+  <div class="splash-logo" id="splashLogo">🚐</div>
+  <div class="splash-nombre" id="splashNombre">Viajes Perdomo</div>
+  <div class="splash-slogan" id="splashSlogan">Tu viaje, nuestra pasión</div>
+  <div class="splash-carrusel"><div class="carrusel-pista" id="carruselPista"></div></div>
+  <div class="splash-barra-wrap"><div class="splash-barra" id="splashBarra"></div></div>
+  <div class="splash-texto-carga" id="splashTexto">Cargando experiencias...</div>
+</div>
+
+<header>
+  <button class="menu-toggle" onclick="abrirPanel()" aria-label="Menú">☰</button>
+  <h1 id="headerTitulo"><span id="headerLogo">🚐</span> <span id="headerNombre">Viajes Perdomo</span></h1>
+  <p id="headerSub">Guaguas, rutas y reservas directas por WhatsApp</p>
+  <button class="notif-toggle" onclick="abrirNotificaciones()" title="Notificaciones">🔔<span id="notifContador">0</span></button>
+</header>
+
+<nav>
+  <button data-vista="inicio" class="activo" onclick="cambiarVista('inicio', this)">🏠 Inicio</button>
+  <button data-vista="guaguas" onclick="cambiarVista('guaguas', this)">🚌 Guaguas</button>
+  <button data-vista="rutas" onclick="cambiarVista('rutas', this)">🗺️ Rutas</button>
+</nav>
+
+<div class="overlay" id="overlayPanel" onclick="cerrarPanel()"></div>
+<aside class="panel-lateral" id="panelLateral">
+  <div class="panel-header"><h3>Más opciones</h3><button class="panel-cerrar" onclick="cerrarPanel()">✕</button></div>
+  <div class="panel-body">
+    <div class="panel-user" id="panelUser"><strong id="panelUserName">—</strong><span id="panelUserPhone">—</span></div>
+    <button class="panel-item" data-vista="faq" onclick="cambiarVista('faq', this); cerrarPanel();">❓ Preguntas frecuentes</button>
+    <button class="panel-item" data-vista="reservas" onclick="cambiarVista('reservas', this); cerrarPanel();">🎫 Mis reservas</button>
+    <button class="panel-item" data-vista="nosotros" onclick="cambiarVista('nosotros', this); cerrarPanel();">👥 Quiénes somos</button>
+    <div class="panel-separador"></div>
+    <button class="panel-item" data-vista="legal" onclick="cambiarVista('legal', this); cerrarPanel();">📄 Legal y confianza</button>
+    <button class="panel-item" data-vista="referidos" onclick="cambiarVista('referidos', this); cerrarPanel();">🎁 Recomienda y gana</button>
+    <div class="panel-separador"></div>
+    <button class="panel-item" onclick="toggleModoOscuro(); cerrarPanel();">🌙 <span id="modoTexto">Modo oscuro</span></button>
+    <button class="panel-item" onclick="instalarPWA(); cerrarPanel();">📲 Instalar app</button>
+    <button class="panel-item" onclick="compartirApp(); cerrarPanel();">🔗 Compartir app</button>
+    <div class="panel-separador"></div>
+    <button class="panel-item" onclick="cerrarSesion(); cerrarPanel();" style="color:var(--rojo);">🚪 Cerrar sesión</button>
+  </div>
+  <div class="panel-footer">Viajes Perdomo © <span id="anioPanel"></span></div>
+</aside>
+
+<div class="contenedor">
+  <section class="vista activa" id="vista-inicio">
+    <div class="hero">
+      <h2 id="heroTitulo">Bienvenido a Viajes Perdomo</h2>
+      <p id="heroTexto">Tu transporte cómodo, seguro y directo.</p>
+      <div class="acciones-hero">
+        <button class="btn-hero primario" onclick="abrirReserva()">📝 Reservar ahora</button>
+        <button class="btn-hero secundario" onclick="cambiarVista('rutas', document.querySelector('[data-vista=rutas]'))">Ver rutas</button>
+      </div>
+    </div>
+    <div class="info-grid" id="infoGrid"></div>
+    <h2 class="seccion" style="margin-top:34px;">Lo que dicen nuestros clientes</h2>
+    <p class="subtitulo">Opiniones reales de personas que ya viajaron con nosotros.</p>
+    <div class="testimonios-grid" id="testimoniosGrid"></div>
+    <div class="referidos-box">
+      <h2>🎁 Recomienda y gana</h2>
+      <p>Invita a un amigo a viajar con Viajes Perdomo y ambos obtienen <strong>10% de descuento</strong> en su próximo viaje.</p>
+      <div class="ref-botones">
+        <button class="ref-btn" onclick="compartirReferido()">📤 Compartir mi enlace</button>
+        <button class="ref-btn ghost" onclick="copiarReferido()">📋 Copiar enlace</button>
+      </div>
+    </div>
+  </section>
+  <section class="vista" id="vista-guaguas">
+    <h2 class="seccion">Nuestras Guaguas</h2>
+    <p class="subtitulo">Toca una guagua para reservar directamente con ella.</p>
+    <div class="grid" id="listaGuaguas"></div>
+  </section>
+  <section class="vista" id="vista-rutas">
+    <h2 class="seccion">Rutas Disponibles</h2>
+    <p class="subtitulo">Toca una ruta para reservar tu asiento.</p>
+    <div class="rutas-lista" id="listaRutas"></div>
+  </section>
+  <section class="vista" id="vista-nosotros">
+    <h2 class="seccion">Quiénes somos</h2>
+    <p class="subtitulo">Conoce la historia detrás de Viajes Perdomo.</p>
+    <div class="nosotros" id="nosotrosBox">
+      <div class="nosotros-flex">
+        <div class="nosotros-foto" id="nosotrosFoto">🚐</div>
+        <div class="nosotros-texto" id="nosotrosTexto"></div>
+      </div>
+      <div class="nosotros-stats" id="nosotrosStats"></div>
+    </div>
+  </section>
+  <section class="vista" id="vista-faq">
+    <h2 class="seccion">Preguntas Frecuentes</h2>
+    <p class="subtitulo">Resuelve tus dudas antes de reservar.</p>
+    <div class="faq-lista" id="faqLista"></div>
+    <div class="faq-consultar">
+      <h3>💬 ¿Tienes otra pregunta?</h3>
+      <p style="font-size:.85rem;color:#666;margin-bottom:10px;">Escribe tu pregunta y te respondemos por WhatsApp.</p>
+      <textarea id="faqPregunta" placeholder="Escribe tu pregunta aquí..."></textarea>
+      <div class="acciones"><button class="btn-wa" onclick="preguntarGestor()">Preguntar al gestor por WhatsApp</button></div>
+    </div>
+  </section>
+  <section class="vista" id="vista-reservas">
+    <h2 class="seccion">Mis Reservas</h2>
+    <p class="subtitulo">Aquí están tus reservas. Cada una tiene un código QR para mostrar al gestor.</p>
+    <div id="misReservasLista"></div>
+  </section>
+  <section class="vista" id="vista-legal">
+    <h2 class="seccion">Legal y confianza</h2>
+    <p class="subtitulo">Transparencia y tranquilidad para tu viaje.</p>
+    <div class="legal-box"><div class="sello-confianza" id="selloConfianza"></div></div>
+    <div class="legal-box"><h2>🚫 Política de cancelación</h2><p id="politicaCancelacionTexto"></p></div>
+    <div class="legal-box"><h2>🔒 Aviso de privacidad</h2><p id="privacidadTexto"></p></div>
+    <div class="legal-box"><h2>📄 Términos y condiciones</h2><div id="terminosTexto"></div></div>
+  </section>
+  <section class="vista" id="vista-referidos">
+    <h2 class="seccion">Recomienda y gana</h2>
+    <p class="subtitulo">Invita a tus amigos y ambos ganan descuentos.</p>
+    <div class="referidos-box" style="margin-top:0;">
+      <h2>🎁 Cómo funciona</h2>
+      <p>Comparte tu enlace único con amigos. Ambos ganan 10% de descuento.</p>
+      <div class="ref-botones">
+        <button class="ref-btn" onclick="compartirReferido()">📤 Compartir mi enlace</button>
+        <button class="ref-btn ghost" onclick="copiarReferido()">📋 Copiar enlace</button>
+      </div>
+    </div>
+    <div class="legal-box" style="margin-top:20px;"><h3>📊 Tu progreso</h3><p id="referidosProgreso"></p></div>
+  </section>
+</div>
+
+<div class="modal-fondo" id="modalReserva">
+  <div class="modal form-reserva">
+    <button class="cerrar" onclick="cerrarReserva()">✕</button>
+    <div id="modalReservaContenido"></div>
+  </div>
+</div>
+
+<div class="modal-fondo" id="modalCancelar">
+  <div class="modal">
+    <button class="cerrar" onclick="cerrarModalCancelar()">✕</button>
+    <div id="modalCancelarContenido"></div>
+  </div>
+</div>
+
+<div class="modal-fondo" id="modalNotificaciones">
+  <div class="modal" style="max-width:520px;">
+    <button class="cerrar" onclick="cerrarNotificaciones()">✕</button>
+    <h3>🔔 Notificaciones</h3>
+    <div id="listaNotificaciones" style="margin-top:12px;"></div>
+    <div class="acciones" style="margin-top:16px;">
+      <button class="btn btn-gris" onclick="marcarTodasLeidas()">Marcar todas como leídas</button>
+      <button class="btn btn-danger" onclick="limpiarNotificaciones()">🗑️ Limpiar todas</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-fondo" id="modalQR">
+  <div class="modal" style="max-width:400px;text-align:center;">
+    <button class="cerrar" onclick="cerrarQR()">✕</button>
+    <h3>🎫 Tu código QR</h3>
+    <div class="qr-container" id="qrContainer"></div>
+    <div class="acciones" style="justify-content:center;">
+      <button class="btn btn-gris" onclick="cerrarQR()">Cerrar</button>
+      <button class="btn btn-primary" onclick="descargarQR()">⬇️ Descargar QR</button>
+    </div>
+  </div>
+</div>
+
+<button class="wa-flotante" onclick="preguntarGestorFlotante()" title="Consultar por WhatsApp">
+  <svg viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21 5.46 0 9.91-4.45 9.91-9.91C21.95 6.45 17.5 2 12.04 2zm5.8 14.1c-.25.7-1.45 1.35-2 1.4-.55.05-1.05.25-3.5-.75-2.95-1.2-4.8-4.25-4.95-4.45-.15-.2-1.15-1.55-1.15-2.95s.75-2.1 1-2.4c.25-.3.55-.35.75-.35s.4 0 .6.05c.2.05.45-.05.7.55.25.6.85 2.05.95 2.2.1.15.15.35.05.55-.1.2-.15.35-.3.55-.15.2-.3.4-.45.55-.15.15-.3.3-.15.6.15.3.7 1.15 1.5 1.85 1.05.9 1.9 1.2 2.2 1.35.3.15.45.1.6-.05.15-.15.7-.8.9-1.1.2-.3.4-.25.65-.15.25.1 1.6.75 1.85.9.25.15.4.2.45.35.05.15.05.85-.2 1.55z"/></svg>
+</button>
+
+<footer>
+  <p>© <span id="anio"></span> Viajes Perdomo — Todos los derechos reservados.</p>
+  <p style="margin-top:6px;">Reservas: <a href="#" id="footerWhatsapp">+53 5 0053909</a></p>
+  <div class="footer-links">
+    <button onclick="cambiarVista('legal', document.querySelector('[data-vista=legal]'))">Privacidad</button>
+    <button onclick="cambiarVista('legal', document.querySelector('[data-vista=legal]'))">Términos</button>
+    <button onclick="cambiarVista('legal', document.querySelector('[data-vista=legal]'))">Cancelación</button>
+  </div>
+</footer>
+
+<div id="bannerInstalar">
+  <div class="bi-texto"><strong>📲 Instala Viajes Perdomo</strong>Accede más rápido desde tu pantalla de inicio.</div>
+  <button class="bi-btn" onclick="instalarPWA()">Instalar</button>
+  <button class="bi-cerrar" onclick="cerrarBannerPWA()">✕</button>
+</div>
+
+<script>
+/* ============================================================
+   TOKEN DE GITHUB (solo Issues: Write)
+   ⚠️ CÁMBIALO POR EL TUYO Y REVOCA EL ANTERIOR
+   ============================================================ */
+const GITHUB_ISSUES_TOKEN = "PEGA_AQUI_TU_TOKEN_NUEVO";
+const GITHUB_OWNER = "TU_USUARIO_GITHUB";
+const GITHUB_REPO = "viajes-perdomo";
+
+/* ============================================================
+   ESTADO GLOBAL
+   ============================================================ */
+let DATA = null;
+let USERS = null;
+let WHATSAPP_NUMERO = "5350053909";
+let usuarioActual = null;
+const SPLASH_DURACION = 10000;
+const ROTACION_MS = 3200;
+const LS_SESION = "vp_sesion_activa";
+const LS_RESERVAS_PREFIX = "vp_reservas_";
+const LS_TEMA = "vp_tema";
+const LS_REFERIDO = "vp_mi_referido";
+const LS_NOTIFICACIONES_PREFIX = "vp_notif_";
+
+/* ============================================================
+   HASH SHA-256
+   ============================================================ */
+async function hashPassword(password){
+  const enc = new TextEncoder().encode(password);
+  const buf = await crypto.subtle.digest("SHA-256", enc);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+/* ============================================================
+   LOGIN
+   ============================================================ */
+function cambiarTabLogin(tab){
+  document.getElementById("tabAcceder").classList.toggle("activo", tab === "acceder");
+  document.getElementById("tabCrear").classList.toggle("activo", tab === "crear");
+  document.getElementById("formAcceder").style.display = tab === "acceder" ? "block" : "none";
+  document.getElementById("formCrear").style.display = tab === "crear" ? "block" : "none";
+  document.getElementById("msgLogin").style.display = "none";
+  document.getElementById("msgRegistro").style.display = "none";
+}
+
+function mostrarMsg(id, texto, tipo){
+  const el = document.getElementById(id);
+  el.textContent = texto;
+  el.className = "login-msg " + tipo;
+  el.style.display = "block";
+}
+
+async function cargarUsers(){
+  try{
+    const resp = await fetch("users.json?t=" + Date.now(), {cache: "no-store"});
+    if(!resp.ok){
+      if(resp.status === 404){ USERS = {usuarios: []}; return; }
+      throw new Error("HTTP " + resp.status);
+    }
+    USERS = await resp.json();
+    if(!USERS.usuarios) USERS.usuarios = [];
+  }catch(e){
+    console.warn("Error cargando users.json:", e);
+    USERS = {usuarios: []};
+  }
+}
+
+async function hacerLogin(){
+  const tel = document.getElementById("loginTelefono").value.trim();
+  const pass = document.getElementById("loginPassword").value;
+  if(!tel || !pass){ mostrarMsg("msgLogin", "Completa teléfono y contraseña", "error"); return; }
+
+  const btn = document.getElementById("btnAcceder");
+  btn.disabled = true;
+  btn.textContent = "Comprobando...";
+
+  try{
+    await cargarUsers();
+    // Buscar en users.json y en localStorage
+    let user = USERS.usuarios.find(u => u.telefono === tel);
+    if(!user){
+      const cache = JSON.parse(localStorage.getItem("vp_users_cache") || "[]");
+      user = (cache.usuarios || cache).find(u => u.telefono === tel);
+    }
+    if(!user){
+      mostrarMsg("msgLogin", "No existe cuenta con ese teléfono. Crea una.", "error");
+      btn.disabled = false; btn.textContent = "Acceder";
+      return;
+    }
+    const hash = await hashPassword(pass);
+    if(hash !== user.passwordHash){
+      mostrarMsg("msgLogin", "Contraseña incorrecta", "error");
+      btn.disabled = false; btn.textContent = "Acceder";
+      return;
+    }
+    const recordar = document.getElementById("loginRecordar").checked;
+    iniciarSesion(user, recordar);
+  }catch(e){
+    mostrarMsg("msgLogin", "Error: " + e.message, "error");
+    btn.disabled = false; btn.textContent = "Acceder";
+  }
+}
+
+async function hacerRegistro(){
+  const nombre = document.getElementById("regNombre").value.trim();
+  const apellido = document.getElementById("regApellido").value.trim();
+  const tel = document.getElementById("regTelefono").value.trim();
+  const pass = document.getElementById("regPassword").value;
+  const pass2 = document.getElementById("regPassword2").value;
+
+  if(!nombre || !apellido || !tel || !pass || !pass2){
+    mostrarMsg("msgRegistro", "Completa todos los campos", "error"); return;
+  }
+  if(pass.length < 4){
+    mostrarMsg("msgRegistro", "La contraseña debe tener al menos 4 caracteres", "error"); return;
+  }
+  if(pass !== pass2){
+    mostrarMsg("msgRegistro", "Las contraseñas no coinciden", "error"); return;
+  }
+
+  const btn = document.getElementById("btnCrear");
+  btn.disabled = true; btn.textContent = "Creando...";
+
+  try{
+    await cargarUsers();
+    if(USERS.usuarios.find(u => u.telefono === tel)){
+      mostrarMsg("msgRegistro", "Ya existe una cuenta con ese teléfono", "error");
+      btn.disabled = false; btn.textContent = "Crear cuenta y acceder";
+      return;
+    }
+    const hash = await hashPassword(pass);
+    const nuevo = { telefono: tel, nombre, apellido, passwordHash: hash, creado: new Date().toISOString() };
+
+    // Guardar en localStorage
+    const cacheActual = JSON.parse(localStorage.getItem("vp_users_cache") || '{"usuarios":[]}');
+    const listaCache = cacheActual.usuarios || cacheActual || [];
+    listaCache.push(nuevo);
+    localStorage.setItem("vp_users_cache", JSON.stringify({usuarios: listaCache}));
+
+    // Crear Issue en GitHub (segundo plano, no bloquea)
+    crearIssueUsuario(nuevo).catch(e => console.warn("Issue falló:", e));
+
+    // Iniciar sesión automáticamente
+    const recordar = true;
+    iniciarSesion(nuevo, recordar);
+  }catch(e){
+    mostrarMsg("msgRegistro", "Error: " + e.message, "error");
+    btn.disabled = false; btn.textContent = "Crear cuenta y acceder";
+  }
+}
+
+async function crearIssueUsuario(datos){
+  if(!GITHUB_ISSUES_TOKEN || GITHUB_ISSUES_TOKEN === "PEGA_AQUI_TU_TOKEN_NUEVO"){
+    console.warn("Token no configurado, se omite Issue");
+    return;
+  }
+  try{
+    const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/issues`;
+    const body = {
+      title: `Nuevo usuario: ${datos.telefono}`,
+      body: "```json\n" + JSON.stringify(datos, null, 2) + "\n```",
+      labels: ["nuevo-usuario"]
+    };
+    const resp = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${GITHUB_ISSUES_TOKEN}`,
+        "Accept": "application/vnd.github+json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(body)
+    });
+    if(resp.ok){
+      console.log("✅ Issue creado");
+    }else{
+      console.warn("⚠️ Error creando Issue:", resp.status);
+    }
+  }catch(e){
+    console.warn("⚠️ Error red creando Issue:", e.message);
+  }
+}
+
+function iniciarSesion(user, recordar){
+  usuarioActual = user;
+  if(recordar){
+    localStorage.setItem(LS_SESION, JSON.stringify({ telefono: user.telefono }));
+  }
+  document.getElementById("loginScreen").style.display = "none";
+  document.getElementById("panelUserName").textContent = user.nombre + " " + user.apellido;
+  document.getElementById("panelUserPhone").textContent = user.telefono;
+  renderTodo();
+  iniciarSplash();
+  sincronizarEstadosReservas();
+  setInterval(sincronizarEstadosReservas, 60000);
+}
+
+function cerrarSesion(){
+  if(!confirm("¿Cerrar sesión?")) return;
+  localStorage.removeItem(LS_SESION);
+  usuarioActual = null;
+  location.reload();
+}
+
+async function intentarSesionGuardada(){
+  const sesion = localStorage.getItem(LS_SESION);
+  if(!sesion) return false;
+  try{
+    const { telefono } = JSON.parse(sesion);
+    await cargarUsers();
+    let user = USERS.usuarios.find(u => u.telefono === telefono);
+    if(!user){
+      const cache = JSON.parse(localStorage.getItem("vp_users_cache") || '{"usuarios":[]}');
+      user = (cache.usuarios || []).find(u => u.telefono === telefono);
+    }
+    if(user){
+      usuarioActual = user;
+      document.getElementById("loginScreen").style.display = "none";
+      document.getElementById("panelUserName").textContent = user.nombre + " " + user.apellido;
+      document.getElementById("panelUserPhone").textContent = user.telefono;
+      return true;
+    }
+  }catch(e){}
+  return false;
+}
+
+/* ============================================================
+   CARGA DE DATOS
+   ============================================================ */
+async function cargarDatos(){
+  try{
+    const resp = await fetch("datos.json?t=" + Date.now(), {cache: "no-store"});
+    if(!resp.ok) throw new Error("No se pudo cargar datos.json");
+    DATA = await resp.json();
+    WHATSAPP_NUMERO = (DATA.config && DATA.config.whatsapp) || "5350053909";
+  }catch(e){
+    console.warn("Error cargando datos.json:", e);
+    DATA = datosPorDefecto();
+    WHATSAPP_NUMERO = DATA.config.whatsapp;
+  }
+}
+
+function datosPorDefecto(){
+  return {
+    config: { whatsapp:"5350053909", headerNombre:"Viajes Perdomo", headerLogo:"🚐", logoUrl:"",
+      headerSub:"Guaguas, rutas y reservas directas por WhatsApp",
+      heroTitulo:"Bienvenido a Viajes Perdomo", heroTexto:"Tu transporte cómodo, seguro y directo.",
+      splashSlogan:"Tu viaje, nuestra pasión",
+      info1Icono:"🚌", info1Titulo:"Flota moderna", info1Texto:"Guaguas con aire acondicionado.",
+      info2Icono:"🕒", info2Titulo:"Horarios flexibles", info2Texto:"Salidas diarias.",
+      info3Icono:"📱", info3Titulo:"Reserva directa", info3Texto:"Sin intermediarios.",
+      politicaCancelacion:"Cancelación sin coste hasta 24h antes.",
+      privacidad:"Solo recogemos datos para tu reserva.",
+      terminos:"<p>Al reservar aceptas las condiciones.</p>",
+      sellos:["✅ Sin pago online","🔒 Datos protegidos","🎫 Reserva sin riesgo"],
+      nosotrosTexto:"Viajes Perdomo nació para ofrecer transporte cómodo y seguro.",
+      nosotrosStats:[{num:"+500",lbl:"Viajes"},{num:"+1.200",lbl:"Clientes"},{num:"5 años",lbl:"Experiencia"}]
+    },
+    guaguas: [], rutas: [], cardsSplash: [], testimonios: [], faqs: [], reservas: [], asientosOcupados: []
+  };
+}
+
+function getReservas(){ return (DATA && DATA.reservas) ? DATA.reservas : []; }
+
+function asientosOcupados(ruta, fecha, horario){
+  const ocupados = new Set();
+  const h = (horario || "").trim();
+  getReservas().forEach(r => {
+    if(r.ruta === ruta && r.fecha === fecha && (r.horario || "").trim() === h && Array.isArray(r.asientos)){
+      r.asientos.forEach(a => ocupados.add(Number(a)));
+    }
+  });
+  (DATA.asientosOcupados || []).forEach(a => {
+    if(a.ruta === ruta && a.fecha === fecha && (a.horario || "").trim() === h){
+      ocupados.add(Number(a.asiento));
+    }
+  });
+  return Array.from(ocupados).sort((a,b) => a-b);
+}
+
+function generarCodigoReserva(){
+  const letras = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let codigo = "VP-";
+  for(let i=0;i<6;i++) codigo += letras.charAt(Math.floor(Math.random() * letras.length));
+  return codigo;
+}
+
+/* ============================================================
+   RESERVAS POR USUARIO
+   ============================================================ */
+function getClaveReservas(){ return LS_RESERVAS_PREFIX + usuarioActual.telefono; }
+function getClaveNotifs(){ return LS_NOTIFICACIONES_PREFIX + usuarioActual.telefono; }
+
+function guardarReservaLocal(reserva){
+  try{
+    const lista = JSON.parse(localStorage.getItem(getClaveReservas()) || "[]");
+    lista.push(reserva);
+    localStorage.setItem(getClaveReservas(), JSON.stringify(lista));
+  }catch(e){}
+}
+function getReservasLocales(){
+  try{ return JSON.parse(localStorage.getItem(getClaveReservas()) || "[]"); }catch(e){ return []; }
+}
+function actualizarReservaLocal(codigo, cambios){
+  try{
+    const lista = JSON.parse(localStorage.getItem(getClaveReservas()) || "[]");
+    const idx = lista.findIndex(r => r.codigo === codigo);
+    if(idx >= 0){
+      lista[idx] = Object.assign({}, lista[idx], cambios);
+      localStorage.setItem(getClaveReservas(), JSON.stringify(lista));
+    }
+  }catch(e){}
+}
+
+/* ============================================================
+   NOTIFICACIONES
+   ============================================================ */
+function getNotificaciones(){ try{ return JSON.parse(localStorage.getItem(getClaveNotifs()) || "[]"); }catch(e){ return []; } }
+function guardarNotificaciones(lista){ try{ localStorage.setItem(getClaveNotifs(), JSON.stringify(lista)); }catch(e){} }
+function crearNotificacion(notif){
+  const lista = getNotificaciones();
+  if(lista.find(n => n.codigo === notif.codigo && n.estadoNuevo === notif.estadoNuevo)) return;
+  lista.unshift(notif);
+  if(lista.length > 50) lista.length = 50;
+  guardarNotificaciones(lista);
+  actualizarContadorNotificaciones();
+}
+function actualizarContadorNotificaciones(){
+  const noLeidas = getNotificaciones().filter(n => !n.leida).length;
+  const cont = document.getElementById("notifContador");
+  if(!cont) return;
+  if(noLeidas > 0){ cont.style.display = "flex"; cont.textContent = noLeidas > 9 ? "9+" : noLeidas; }
+  else{ cont.style.display = "none"; }
+}
+function abrirNotificaciones(){ renderNotificaciones(); document.getElementById("modalNotificaciones").classList.add("abierto"); }
+function cerrarNotificaciones(){ document.getElementById("modalNotificaciones").classList.remove("abierto"); }
+function renderNotificaciones(){
+  const cont = document.getElementById("listaNotificaciones");
+  const lista = getNotificaciones();
+  if(!lista.length){ cont.innerHTML = `<div class="notif-vacio">No tienes notificaciones todavía.</div>`; return; }
+  const iconos = { pendiente:"⏳", confirmada:"✅", en_camino:"🚌", completada:"🏁", cancelada:"❌" };
+  const textos = {
+    pendiente:"Tu reserva está pendiente de confirmación.",
+    confirmada:"¡Tu reserva ha sido CONFIRMADA!",
+    en_camino:"Tu guagua está EN CAMINO.",
+    completada:"¡Viaje COMPLETADO! Gracias por viajar con nosotros.",
+    cancelada:"Tu reserva ha sido CANCELADA."
+  };
+  cont.innerHTML = lista.map((n, i) => `
+    <div class="notif-item ${n.leida ? '' : 'no-leida'} estado-${n.estadoNuevo}" onclick="marcarLeida(${i})">
+      <div class="notif-titulo">${iconos[n.estadoNuevo] || "🔔"} ${textos[n.estadoNuevo] || n.estadoNuevo}</div>
+      <div class="notif-texto">Código: <strong>${n.codigo}</strong>${n.mensaje ? `<br>${n.mensaje}` : ""}</div>
+      <div class="notif-fecha">${new Date(n.fecha).toLocaleString("es-ES")}</div>
+    </div>
+  `).join("");
+}
+function marcarLeida(idx){
+  const lista = getNotificaciones();
+  if(lista[idx]){ lista[idx].leida = true; guardarNotificaciones(lista); renderNotificaciones(); actualizarContadorNotificaciones(); }
+}
+function marcarTodasLeidas(){
+  const lista = getNotificaciones();
+  lista.forEach(n => n.leida = true);
+  guardarNotificaciones(lista);
+  renderNotificaciones();
+  actualizarContadorNotificaciones();
+}
+function limpiarNotificaciones(){
+  if(!confirm("¿Eliminar todas?")) return;
+  guardarNotificaciones([]);
+  renderNotificaciones();
+  actualizarContadorNotificaciones();
+}
+
+/* ============================================================
+   SINCRONIZAR ESTADOS
+   ============================================================ */
+async function sincronizarEstadosReservas(){
+  if(!usuarioActual) return;
+  const locales = getReservasLocales();
+  if(!locales.length) return;
+  let cambios = false;
+  let dataServidor = null, dataCliente = null;
+  try{ const r = await fetch("datos.json?t=" + Date.now(), {cache: "no-store"}); if(r.ok) dataServidor = await r.json(); }catch(e){}
+  try{ const r = await fetch("datoscliente.json?t=" + Date.now(), {cache: "no-store"}); if(r.ok) dataCliente = await r.json(); }catch(e){}
+
+  locales.forEach(local => {
+    let estadoServidor = null, mensajeAdmin = "", actualizado = null;
+    if(dataServidor?.reservas){
+      const r = dataServidor.reservas.find(x => x.codigo === local.codigo);
+      if(r){ estadoServidor = r.estado; mensajeAdmin = r.mensajeAdmin || ""; actualizado = r.actualizado; }
+    }
+    if(!estadoServidor && dataCliente?.clientes){
+      const c = dataCliente.clientes.find(x => x.codigo === local.codigo);
+      if(c){ estadoServidor = c.estado; mensajeAdmin = c.mensajeAdmin || ""; actualizado = c.actualizado; }
+    }
+    if(estadoServidor && estadoServidor !== local.estado){
+      actualizarReservaLocal(local.codigo, { estado: estadoServidor, mensajeAdmin, actualizado: actualizado || new Date().toISOString() });
+      cambios = true;
+      crearNotificacion({ tipo: "estado", codigo: local.codigo, estadoNuevo: estadoServidor, estadoAnterior: local.estado, mensaje: mensajeAdmin, fecha: new Date().toISOString(), leida: false });
+    }
+  });
+  if(cambios){ renderMisReservas(); actualizarContadorNotificaciones(); }
+}
+
+/* ============================================================
+   ENLACE ADMIN
+   ============================================================ */
+function generarEnlaceAdmin(payload){
+  const base64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+  let path = window.location.pathname;
+  path = path.replace(/index\.html?$/i, "admin.html");
+  if(!/admin\.html?$/i.test(path)) path = path.replace(/\/?$/, "/admin.html");
+  return window.location.origin + path + "?r=" + base64;
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function renderTodo(){
+  if(!DATA) return;
+  const c = DATA.config;
+  if(c.logoUrl){
+    document.getElementById("splashLogo").innerHTML = `<img src="${c.logoUrl}" alt="Logo">`;
+    document.getElementById("headerLogo").innerHTML = `<img src="${c.logoUrl}" alt="Logo" style="height:1em;width:auto;max-width:1em;object-fit:contain;">`;
+  }else{
+    document.getElementById("splashLogo").textContent = c.headerLogo || "🚐";
+    document.getElementById("headerLogo").textContent = c.headerLogo || "🚐";
+  }
+  document.getElementById("headerNombre").textContent = c.headerNombre || "Viajes Perdomo";
+  document.getElementById("headerSub").textContent = c.headerSub || "";
+  document.getElementById("heroTitulo").textContent = c.heroTitulo || "";
+  document.getElementById("heroTexto").textContent = c.heroTexto || "";
+  document.getElementById("splashSlogan").textContent = c.splashSlogan || "Tu viaje, nuestra pasión";
+  document.getElementById("anio").textContent = new Date().getFullYear();
+  document.getElementById("anioPanel").textContent = new Date().getFullYear();
+  const fw = document.getElementById("footerWhatsapp");
+  fw.href = "https://wa.me/" + WHATSAPP_NUMERO;
+  fw.textContent = "+" + WHATSAPP_NUMERO;
+
+  document.getElementById("infoGrid").innerHTML = `
+    <div class="info-card"><div class="icono">${c.info1Icono || "🚌"}</div><h3>${c.info1Titulo || ""}</h3><p>${c.info1Texto || ""}</p></div>
+    <div class="info-card"><div class="icono">${c.info2Icono || "🕒"}</div><h3>${c.info2Titulo || ""}</h3><p>${c.info2Texto || ""}</p></div>
+    <div class="info-card"><div class="icono">${c.info3Icono || "📱"}</div><h3>${c.info3Titulo || ""}</h3><p>${c.info3Texto || ""}</p></div>
+  `;
+  renderNosotros(); renderLegal(); renderGuaguas(); renderRutas();
+  renderTestimonios(); renderFAQs(); renderMisReservas(); renderReferidos();
+  actualizarContadorNotificaciones();
+}
+
+function renderNosotros(){
+  const c = DATA.config;
+  const foto = document.getElementById("nosotrosFoto");
+  if(c.nosotrosFoto) foto.innerHTML = `<img src="${c.nosotrosFoto}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+  else foto.textContent = "🚐";
+  document.getElementById("nosotrosTexto").textContent = c.nosotrosTexto || "";
+  document.getElementById("nosotrosStats").innerHTML = (c.nosotrosStats || []).map(s => `<div class="stat"><div class="num">${s.num}</div><div class="lbl">${s.lbl}</div></div>`).join("");
+}
+
+function renderLegal(){
+  const c = DATA.config;
+  document.getElementById("selloConfianza").innerHTML = (c.sellos || []).map(s => `<span class="sello">${s}</span>`).join("");
+  document.getElementById("politicaCancelacionTexto").textContent = c.politicaCancelacion || "";
+  document.getElementById("privacidadTexto").textContent = c.privacidad || "";
+  document.getElementById("terminosTexto").innerHTML = c.terminos || "";
+}
+
+function renderGuaguas(){
+  const lg = document.getElementById("listaGuaguas");
+  if(!DATA.guaguas.length){ lg.innerHTML = `<p style="color:#888;">No hay guaguas.</p>`; return; }
+  lg.innerHTML = DATA.guaguas.map(g => `
+    <div class="card" onclick="abrirReservaGuagua('${escapeAttr(g.nombre)}')">
+      ${g.foto ? `<img class="foto" src="${g.foto}" alt="${g.nombre}">` : `<div class="foto">${g.icono || "🚌"}</div>`}
+      <div class="card-body">
+        <h3>${g.icono || "🚌"} ${g.nombre}</h3>
+        <p class="detalle">👥 ${g.capacidad}</p>
+        <p class="detalle">${g.descripcion || ""}</p>
+        <button class="card-btn">📝 Reservar con esta guagua</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+function renderRutas(){
+  const lr = document.getElementById("listaRutas");
+  if(!DATA.rutas.length){ lr.innerHTML = `<div style="background:#fff;border-radius:14px;padding:30px;text-align:center;color:#888;">No hay rutas.</div>`; return; }
+  const hoy = new Date().toISOString().slice(0,10);
+  lr.innerHTML = DATA.rutas.map(r => {
+    const capacidad = Number(r.capacidad) || 20;
+    const ocupados = asientosOcupados(r.ruta, hoy, r.horario || "");
+    const disponibles = capacidad - ocupados.length;
+    const agotado = disponibles <= 0;
+    return `
+      <div class="ruta-card" onclick="${agotado ? "" : `abrirReservaRuta('${escapeAttr(r.ruta)}')`}">
+        ${r.foto ? `<img class="ruta-foto" src="${r.foto}" alt="${r.ruta}">` : `<div class="ruta-foto">🗺️</div>`}
+        <div><div class="ruta-nombre">${r.ruta}</div><div style="font-size:.82rem;color:#666;">Destino disponible</div></div>
+        <div class="ruta-col"><span class="ruta-col-label">Salida</span><span class="ruta-col-valor">${r.salida}</span></div>
+        <div class="ruta-col"><span class="ruta-col-label">Horario</span><span class="ruta-col-valor">${r.horario}</span></div>
+        <div>
+          <div class="ruta-precio">${r.precio}</div>
+          <div class="ruta-disponibles ${agotado ? 'agotado' : ''}">${agotado ? "❌ Agotado" : `✅ ${disponibles} libres`}</div>
+        </div>
+        <button class="ruta-btn" ${agotado ? "disabled" : ""} onclick="event.stopPropagation(); abrirReservaRuta('${escapeAttr(r.ruta)}')">${agotado ? "Sin plazas" : "Reservar"}</button>
+      </div>
+    `;
+  }).join("");
+}
+
+function renderTestimonios(){
+  const cont = document.getElementById("testimoniosGrid");
+  const lista = DATA.testimonios || [];
+  if(!lista.length){ cont.innerHTML = `<p style="color:#888;background:#fff;padding:20px;border-radius:12px;">Pronto tendremos testimonios.</p>`; return; }
+  cont.innerHTML = lista.map(t => `
+    <div class="testimonio">
+      <div class="estrellas">${"★".repeat(t.estrellas || 5)}${"☆".repeat(5 - (t.estrellas || 5))}</div>
+      <p class="texto">"${t.texto}"</p>
+      <div class="autor">— ${t.autor}</div>
+      ${t.fecha ? `<div class="fecha">${t.fecha}</div>` : ""}
+    </div>
+  `).join("");
+}
+
+function renderFAQs(){
+  const cont = document.getElementById("faqLista");
+  const lista = DATA.faqs || [];
+  if(!lista.length){ cont.innerHTML = `<p style="color:#888;background:#fff;padding:20px;border-radius:12px;">Pronto añadiremos FAQs.</p>`; return; }
+  cont.innerHTML = lista.map((f, i) => `
+    <div class="faq-item" id="faq-${i}">
+      <div class="faq-pregunta" onclick="toggleFAQ(${i})"><span>${f.pregunta}</span><span class="flecha">▼</span></div>
+      <div class="faq-respuesta">${f.respuesta}</div>
+    </div>
+  `).join("");
+}
+function toggleFAQ(i){ const el = document.getElementById("faq-" + i); if(el) el.classList.toggle("abierto"); }
+
+function renderMisReservas(){
+  const cont = document.getElementById("misReservasLista");
+  const lista = getReservasLocales();
+  if(!lista.length){ cont.innerHTML = `<div style="background:#fff;border-radius:12px;padding:24px;text-align:center;color:#888;">Aún no tienes reservas.</div>`; return; }
+  const estadosColor = { pendiente:"var(--amarillo)", confirmada:"var(--verde-wa)", en_camino:"#3498db", completada:"#8e44ad", cancelada:"var(--rojo)" };
+  const estadosIcono = { pendiente:"⏳", confirmada:"✅", en_camino:"🚌", completada:"🏁", cancelada:"❌" };
+  cont.innerHTML = lista.slice().reverse().map(r => `
+    <div class="codigo-reserva" style="background:#fff;color:#333;box-shadow:0 2px 8px rgba(0,0,0,.08);border-left:5px solid ${estadosColor[r.estado] || 'var(--amarillo)'};">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <div style="text-align:left;">
+          <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:1px;color:#888;">Código</div>
+          <div style="font-size:1.3rem;font-weight:800;letter-spacing:2px;font-family:monospace;color:var(--azul);">${r.codigo}</div>
+        </div>
+        <div style="padding:4px 12px;border-radius:20px;font-size:.72rem;font-weight:700;color:#fff;background:${estadosColor[r.estado] || 'var(--amarillo)'};">
+          ${estadosIcono[r.estado] || "⏳"} ${r.estado || "pendiente"}
+        </div>
+      </div>
+      <div style="margin-top:10px;font-size:.85rem;color:#555;text-align:left;">
+        <div><strong>Ruta:</strong> ${r.ruta}</div>
+        <div><strong>Fecha:</strong> ${r.fecha}</div>
+        ${r.horario ? `<div><strong>Horario:</strong> ${r.horario}</div>` : ""}
+        <div><strong>Asientos:</strong> ${(r.asientos || []).join(", ")}</div>
+        ${r.mensajeAdmin ? `<div style="margin-top:6px;padding:8px;background:#eef6ff;border-radius:6px;font-size:.8rem;"><strong>Mensaje:</strong> ${r.mensajeAdmin}</div>` : ""}
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-primary" style="font-size:.8rem;padding:8px 14px;" onclick="mostrarQR('${r.codigo}')">📱 Ver QR</button>
+        <button class="btn btn-gris" style="font-size:.8rem;padding:8px 14px;" onclick="reenviarEnlaceReserva('${r.codigo}')">📤 Enviar al gestor</button>
+        ${r.estado !== 'cancelada' && r.estado !== 'completada' ? `<button class="btn btn-danger" style="font-size:.8rem;padding:8px 14px;" onclick="abrirCancelarReserva('${r.codigo}')">❌ Cancelar</button>` : ""}
+      </div>
+    </div>
+  `).join("");
+}
+
+function reenviarEnlaceReserva(codigo){
+  const r = getReservasLocales().find(x => x.codigo === codigo);
+  if(!r){ alert("No encontrada"); return; }
+  const enlace = generarEnlaceAdmin({
+    tipo: "reserva", codigo: r.codigo, nombre: r.nombre, telefono: r.telefono,
+    ruta: r.ruta, fecha: r.fecha, horario: r.horario || "",
+    asientos: r.asientos, pasajeros: r.pasajeros, notas: r.notas || ""
+  });
+  const msg = `🚐 *Viajes Perdomo*\n\n🎫 Código: ${r.codigo}\n🗺️ Ruta: ${r.ruta}\n📅 Fecha: ${r.fecha}\n🪑 Asientos: ${(r.asientos || []).join(", ")}\n\n📥 Aplicar en admin:\n${enlace}`;
+  window.open(`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(msg)}`, "_blank");
+}
+
+function renderReferidos(){
+  const cont = document.getElementById("referidosProgreso");
+  if(cont) cont.innerHTML = `Tu enlace:<br><code style="background:#f4f6fb;padding:6px 10px;border-radius:6px;display:inline-block;margin-top:8px;word-break:break-all;font-size:.8rem;">${getUrlReferido()}</code>`;
+}
+
+/* ============================================================
+   QR
+   ============================================================ */
+let qrActual = null;
+function mostrarQR(codigo){
+  const r = getReservasLocales().find(x => x.codigo === codigo);
+  if(!r){ alert("Reserva no encontrada"); return; }
+  const payload = {
+    tipo: "reserva", codigo: r.codigo, telefono: usuarioActual.telefono,
+    nombre: usuarioActual.nombre, apellido: usuarioActual.apellido,
+    ruta: r.ruta, fecha: r.fecha, horario: r.horario || "", asientos: r.asientos
+  };
+  const cont = document.getElementById("qrContainer");
+  cont.innerHTML = "";
+  qrActual = new QRCode(cont, { text: JSON.stringify(payload), width: 260, height: 260, colorDark: "#0b3d91", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H });
+  document.getElementById("modalQR").classList.add("abierto");
+}
+function cerrarQR(){ document.getElementById("modalQR").classList.remove("abierto"); qrActual = null; }
+function descargarQR(){
+  const cont = document.getElementById("qrContainer");
+  const canvas = cont.querySelector("canvas");
+  if(canvas){ const link = document.createElement("a"); link.download = "reserva-qr.png"; link.href = canvas.toDataURL("image/png"); link.click(); return; }
+  const img = cont.querySelector("img");
+  if(img){ const link = document.createElement("a"); link.download = "reserva-qr.png"; link.href = img.src; link.click(); }
+}
+
+/* ============================================================
+   NAVEGACIÓN
+   ============================================================ */
+function cambiarVista(nombre, boton){
+  document.querySelectorAll(".vista").forEach(v => v.classList.remove("activa"));
+  const vista = document.getElementById("vista-" + nombre);
+  if(vista) vista.classList.add("activa");
+  document.querySelectorAll("nav button, .panel-item").forEach(b => b.classList.remove("activo"));
+  if(boton) boton.classList.add("activo");
+  const enNav = document.querySelector(`nav button[data-vista="${nombre}"]`);
+  if(enNav) enNav.classList.add("activo");
+  if(nombre === "reservas") renderMisReservas();
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+function abrirPanel(){ document.getElementById("panelLateral").classList.add("abierto"); document.getElementById("overlayPanel").classList.add("visible"); }
+function cerrarPanel(){ document.getElementById("panelLateral").classList.remove("abierto"); document.getElementById("overlayPanel").classList.remove("visible"); }
+
+/* ============================================================
+   RESERVA MULTIPASO
+   ============================================================ */
+let reservaEstado = { paso:1, ruta:"", guagua:"", fecha:"", horario:"", pasajeros:1, notas:"", asientosSeleccionados:[], codigo:"" };
+
+function abrirReserva(){
+  reservaEstado = { paso:1, ruta:"", guagua:"", fecha:"", horario:"", pasajeros:1, notas:"", asientosSeleccionados:[], codigo:"" };
+  document.getElementById("modalReserva").classList.add("abierto");
+  renderPasoReserva();
+}
+function abrirReservaRuta(nombreRuta){
+  abrirReserva();
+  reservaEstado.ruta = nombreRuta;
+  const r = DATA.rutas.find(x => x.ruta === nombreRuta);
+  if(r) reservaEstado.horario = r.horario || "";
+  reservaEstado.paso = 2;
+  renderPasoReserva();
+}
+function abrirReservaGuagua(nombreGuagua){
+  abrirReserva();
+  reservaEstado.guagua = nombreGuagua;
+  reservaEstado.paso = 2;
+  renderPasoReserva();
+}
+function cerrarReserva(){ document.getElementById("modalReserva").classList.remove("abierto"); }
+
+function renderPasoReserva(){
+  const cont = document.getElementById("modalReservaContenido");
+  const c = reservaEstado;
+  if(c.paso === 1){
+    cont.innerHTML = `
+      <h3>📝 Reserva — Paso 1 de 3</h3>
+      <div class="aviso">Selecciona la ruta.</div>
+      <label>Ruta *</label>
+      <select id="rsRuta" onchange="rsRutaCambio()">
+        <option value="">— Selecciona —</option>
+        ${DATA.rutas.map(r => `<option value="${r.ruta}" ${c.ruta === r.ruta ? 'selected' : ''}>${r.ruta} — ${r.precio}</option>`).join("")}
+      </select>
+      <div class="acciones"><button class="btn btn-gris" onclick="cerrarReserva()">Cancelar</button><button class="btn btn-primary" onclick="rsPaso1Siguiente()">Siguiente →</button></div>
+    `;
+    if(c.ruta) setTimeout(()=>{ const s=document.getElementById("rsRuta"); if(s) s.value = c.ruta; }, 50);
+  }else if(c.paso === 2){
+    const r = DATA.rutas.find(x => x.ruta === c.ruta);
+    const hoy = new Date().toISOString().slice(0,10);
+    cont.innerHTML = `
+      <h3>📅 Reserva — Paso 2 de 3</h3>
+      <div class="aviso">Ruta: <strong>${c.ruta}</strong></div>
+      <label>Fecha *</label>
+      <input id="rsFecha" type="date" min="${hoy}" value="${c.fecha || hoy}" onchange="rsFechaCambio()">
+      <label>Horario</label>
+      <input id="rsHorario" value="${c.horario || (r ? r.horario : '')}">
+      <label>Pasajeros *</label>
+      <input id="rsPasajeros" type="number" min="1" value="${c.pasajeros}" onchange="rsPasajerosCambio()">
+      <div class="acciones"><button class="btn btn-gris" onclick="rsVolver(1)">← Atrás</button><button class="btn btn-primary" onclick="rsPaso2Siguiente()">Siguiente →</button></div>
+    `;
+  }else if(c.paso === 3){
+    const ocupados = asientosOcupados(c.ruta, c.fecha, c.horario);
+    const capacidad = 20;
+    let asientosHTML = "";
+    for(let i=1;i<=capacidad;i++){
+      const ocupado = ocupados.includes(i);
+      const sel = c.asientosSeleccionados.includes(i);
+      asientosHTML += `<button class="asiento ${ocupado ? 'ocupado' : (sel ? 'seleccionado' : 'libre')}" ${ocupado ? 'disabled' : ''} onclick="rsToggleAsiento(${i})">${i}</button>`;
+    }
+    cont.innerHTML = `
+      <h3>🪑 Reserva — Paso 3 de 3</h3>
+      <div class="aviso">Ruta: <strong>${c.ruta}</strong> · ${c.fecha} ${c.horario ? "· " + c.horario : ""}</div>
+      <label>Selecciona tus asientos *</label>
+      <div class="asientos-grid">${asientosHTML}</div>
+      <div class="asientos-leyenda">
+        <span><span class="cuadro libre"></span> Libre</span>
+        <span><span class="cuadro ocupado"></span> Ocupado</span>
+        <span><span class="cuadro sel"></span> Seleccionado</span>
+      </div>
+      <label style="margin-top:16px;">Notas adicionales</label>
+      <textarea id="rsNotas">${c.notas}</textarea>
+      <div class="acciones"><button class="btn btn-gris" onclick="rsVolver(2)">← Atrás</button><button class="btn-wa" onclick="rsConfirmar()">Confirmar reserva</button></div>
+    `;
+  }
+}
+
+function rsRutaCambio(){ reservaEstado.ruta = document.getElementById("rsRuta").value; }
+function rsPaso1Siguiente(){
+  reservaEstado.ruta = document.getElementById("rsRuta").value;
+  if(!reservaEstado.ruta){ alert("Selecciona una ruta."); return; }
+  reservaEstado.paso = 2; renderPasoReserva();
+}
+function rsFechaCambio(){ reservaEstado.fecha = document.getElementById("rsFecha").value; }
+function rsPasajerosCambio(){ const v = Number(document.getElementById("rsPasajeros").value); reservaEstado.pasajeros = v > 0 ? v : 1; }
+function rsPaso2Siguiente(){
+  const fecha = document.getElementById("rsFecha").value;
+  const horario = document.getElementById("rsHorario").value.trim();
+  const pasajeros = Number(document.getElementById("rsPasajeros").value) || 1;
+  if(!fecha){ alert("Selecciona la fecha."); return; }
+  reservaEstado.fecha = fecha; reservaEstado.horario = horario; reservaEstado.pasajeros = pasajeros;
+  reservaEstado.paso = 3; reservaEstado.asientosSeleccionados = [];
+  renderPasoReserva();
+}
+function rsVolver(paso){
+  if(paso === 2){
+    const no = document.getElementById("rsNotas");
+    if(no) reservaEstado.notas = no.value;
+  }
+  reservaEstado.paso = paso; renderPasoReserva();
+}
+function rsToggleAsiento(num){
+  const lista = reservaEstado.asientosSeleccionados;
+  const idx = lista.indexOf(num);
+  if(idx >= 0) lista.splice(idx, 1);
+  else{
+    if(lista.length >= reservaEstado.pasajeros) lista.shift();
+    lista.push(num);
+  }
+  const no = document.getElementById("rsNotas");
+  if(no) reservaEstado.notas = no.value;
+  renderPasoReserva();
+}
+
+async function rsConfirmar(){
+  const notas = document.getElementById("rsNotas").value.trim();
+  if(reservaEstado.asientosSeleccionados.length === 0){ alert("Selecciona al menos un asiento."); return; }
+  reservaEstado.notas = notas;
+  reservaEstado.codigo = generarCodigoReserva();
+
+  let fechaLegible = reservaEstado.fecha;
+  try{ const d = new Date(reservaEstado.fecha + "T00:00:00"); fechaLegible = d.toLocaleDateString("es-ES", { weekday:"long", year:"numeric", month:"long", day:"numeric" }); }catch(e){}
+
+  const enlace = generarEnlaceAdmin({
+    tipo: "reserva", codigo: reservaEstado.codigo,
+    telefono: usuarioActual.telefono, nombre: usuarioActual.nombre, apellido: usuarioActual.apellido,
+    ruta: reservaEstado.ruta, fecha: reservaEstado.fecha, horario: reservaEstado.horario || "",
+    asientos: reservaEstado.asientosSeleccionados.slice(), pasajeros: reservaEstado.pasajeros, notas: reservaEstado.notas || ""
+  });
+
+  const lineas = [
+    "🚐 *NUEVA RESERVA - Viajes Perdomo*", "────────────────────",
+    `🎫 *Código:* ${reservaEstado.codigo}`,
+    `👤 *Nombre:* ${usuarioActual.nombre} ${usuarioActual.apellido}`,
+    `📞 *Teléfono:* ${usuarioActual.telefono}`,
+    `👥 *Pasajeros:* ${reservaEstado.pasajeros}`,
+    `🗺️ *Ruta:* ${reservaEstado.ruta}`,
+    `📅 *Fecha:* ${fechaLegible}`,
+    `🪑 *Asientos:* ${reservaEstado.asientosSeleccionados.join(", ")}`
+  ];
+  if(reservaEstado.horario) lineas.push(`🕒 *Horario:* ${reservaEstado.horario}`);
+  if(reservaEstado.guagua) lineas.push(`🚌 *Guagua:* ${reservaEstado.guagua}`);
+  if(notas) lineas.push(`📝 *Notas:* ${notas}`);
+  lineas.push("────────────────────");
+  lineas.push("📥 *Toca el enlace para aplicar en el admin:*");
+  lineas.push(enlace);
+  lineas.push("────────────────────");
+  lineas.push("¡Gracias! Guarda tu código. 🙌");
+
+  window.open(`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(lineas.join("\n"))}`, "_blank");
+
+  guardarReservaLocal({
+    codigo: reservaEstado.codigo, ruta: reservaEstado.ruta, fecha: reservaEstado.fecha,
+    horario: reservaEstado.horario, asientos: reservaEstado.asientosSeleccionados.slice(),
+    pasajeros: reservaEstado.pasajeros, nombre: usuarioActual.nombre + " " + usuarioActual.apellido,
+    telefono: usuarioActual.telefono, guagua: reservaEstado.guagua || "", notas,
+    estado: "pendiente", creada: new Date().toISOString()
+  });
+
+  mostrarConfirmacionReserva(enlace);
+}
+
+function mostrarConfirmacionReserva(enlace){
+  const cont = document.getElementById("modalReservaContenido");
+  cont.innerHTML = `
+    <h3>✅ ¡Reserva enviada!</h3>
+    <div class="aviso">Se abrió WhatsApp con el mensaje y el enlace para el gestor.</div>
+    <div class="codigo-reserva">
+      <div class="cr-label">Tu código</div>
+      <div class="cr-codigo">${reservaEstado.codigo}</div>
+    </div>
+    <div style="background:#f4f6fb;border-radius:10px;padding:14px;font-size:.85rem;color:#444;margin-top:10px;">
+      <div><strong>Ruta:</strong> ${reservaEstado.ruta}</div>
+      <div><strong>Fecha:</strong> ${reservaEstado.fecha}</div>
+      <div><strong>Asientos:</strong> ${reservaEstado.asientosSeleccionados.join(", ")}</div>
+    </div>
+    <div class="acciones">
+      <button class="btn btn-gris" onclick="cerrarReserva()">Cerrar</button>
+      <button class="btn btn-primary" onclick="mostrarQR('${reservaEstado.codigo}')">📱 Ver QR</button>
+    </div>
+  `;
+}
+
+/* ============================================================
+   CANCELAR
+   ============================================================ */
+let codigoCancelar = null;
+function abrirCancelarReserva(codigo){
+  codigoCancelar = codigo;
+  document.getElementById("modalCancelarContenido").innerHTML = `
+    <h3>❌ Cancelar reserva</h3>
+    <p style="font-size:.9rem;color:#444;margin:10px 0;">¿Por qué cancelas?</p>
+    <select id="motivoCancelar">
+      <option value="">— Selecciona —</option>
+      <option value="Cambio de planes">Cambio de planes</option>
+      <option value="Encontré otra opción">Encontré otra opción</option>
+      <option value="Problemas personales">Problemas personales</option>
+      <option value="La fecha no me sirve">La fecha no me sirve</option>
+      <option value="Otro">Otro</option>
+    </select>
+    <label>Comentario (opcional)</label>
+    <textarea id="comentarioCancelar"></textarea>
+    <div class="acciones"><button class="btn btn-gris" onclick="cerrarModalCancelar()">Volver</button><button class="btn btn-danger" onclick="confirmarCancelar()">Confirmar</button></div>
+  `;
+  document.getElementById("modalCancelar").classList.add("abierto");
+}
+function cerrarModalCancelar(){ document.getElementById("modalCancelar").classList.remove("abierto"); codigoCancelar = null; }
+function confirmarCancelar(){
+  const motivo = document.getElementById("motivoCancelar").value;
+  const comentario = document.getElementById("comentarioCancelar").value.trim();
+  if(!motivo){ alert("Selecciona un motivo."); return; }
+  actualizarReservaLocal(codigoCancelar, { estado: "cancelada", motivo, comentario, cancelada: new Date().toISOString() });
+
+  const enlace = generarEnlaceAdmin({ tipo: "cancelacion", codigo: codigoCancelar, motivo, comentario });
+  const lineas = [
+    "❌ *CANCELACIÓN - Viajes Perdomo*", "────────────────────",
+    `🎫 *Código:* ${codigoCancelar}`, `📋 *Motivo:* ${motivo}`,
+    comentario ? `💬 *Comentario:* ${comentario}` : "",
+    "────────────────────", "📥 Aplicar en admin:", enlace
+  ].filter(Boolean);
+  window.open(`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(lineas.join("\n"))}`, "_blank");
+
+  cerrarModalCancelar();
+  renderMisReservas();
+  alert("Reserva cancelada. Envía el mensaje al gestor.");
+}
+
+/* ============================================================
+   OTROS
+   ============================================================ */
+function preguntarGestor(){
+  const txt = document.getElementById("faqPregunta").value.trim();
+  if(!txt){ alert("Escribe tu pregunta."); return; }
+  window.open(`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("Hola, tengo una pregunta:\n\n" + txt)}`, "_blank");
+  document.getElementById("faqPregunta").value = "";
+}
+function preguntarGestorFlotante(){
+  const txt = prompt("Escribe tu consulta:");
+  if(txt && txt.trim()) window.open(`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("Hola, tengo una consulta:\n\n" + txt.trim())}`, "_blank");
+}
+function getMiReferido(){
+  let ref = localStorage.getItem(LS_REFERIDO);
+  if(!ref){
+    const letras = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let codigo = "REF-";
+    for(let i=0;i<6;i++) codigo += letras.charAt(Math.floor(Math.random() * letras.length));
+    localStorage.setItem(LS_REFERIDO, codigo);
+    ref = codigo;
+  }
+  return ref;
+}
+function getUrlReferido(){ return window.location.origin + window.location.pathname + "?ref=" + getMiReferido(); }
+function compartirReferido(){
+  const url = getUrlReferido();
+  const texto = `¡Viaja con Viajes Perdomo! Usa mi enlace y ambos obtenemos 10% de descuento: ${url}`;
+  if(navigator.share) navigator.share({ title: "Viajes Perdomo", text: texto, url }).catch(()=>{});
+  else window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, "_blank");
+}
+function copiarReferido(){
+  const url = getUrlReferido();
+  navigator.clipboard.writeText(url).then(() => alert("✅ Copiado: " + url)).catch(() => prompt("Copia:", url));
+}
+function actualizarEstadoConexion(){
+  const el = document.getElementById("estadoConexion");
+  const txt = document.getElementById("estadoTexto");
+  if(!navigator.onLine){ el.className = "estado-conexion offline"; txt.textContent = "Sin conexión"; return; }
+  const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  if(conn && (conn.effectiveType === "slow-2g" || conn.effectiveType === "2g" || conn.saveData)){
+    el.className = "estado-conexion inestable"; txt.textContent = "Conexión inestable";
+  }else{
+    el.className = "estado-conexion online"; txt.textContent = "En línea";
+  }
+}
+window.addEventListener("online", actualizarEstadoConexion);
+window.addEventListener("offline", actualizarEstadoConexion);
+if(navigator.connection) navigator.connection.addEventListener("change", actualizarEstadoConexion);
+function toggleModoOscuro(){
+  document.body.classList.toggle("modo-oscuro");
+  const activo = document.body.classList.contains("modo-oscuro");
+  localStorage.setItem(LS_TEMA, activo ? "oscuro" : "claro");
+  const txt = document.getElementById("modoTexto");
+  if(txt) txt.textContent = activo ? "Modo claro" : "Modo oscuro";
+}
+function cargarTema(){
+  if(localStorage.getItem(LS_TEMA) === "oscuro"){
+    document.body.classList.add("modo-oscuro");
+    const txt = document.getElementById("modoTexto");
+    if(txt) txt.textContent = "Modo claro";
+  }
+}
+function compartirApp(){
+  const url = window.location.origin + window.location.pathname;
+  const texto = `Viaja con Viajes Perdomo: ${url}`;
+  if(navigator.share) navigator.share({ title: "Viajes Perdomo", text: texto, url }).catch(()=>{});
+  else window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, "_blank");
+}
+
+function iniciarSplash(){
+  document.getElementById("splash").style.display = "flex";
+  const pista = document.getElementById("carruselPista");
+  const barra = document.getElementById("splashBarra");
+  const texto = document.getElementById("splashTexto");
+  const splash = document.getElementById("splash");
+  const cards = DATA.cardsSplash || [];
+  if(cards.length === 0){ splash.classList.add("oculto"); setTimeout(() => splash.remove(), 800); return; }
+  cards.forEach(c => {
+    const div = document.createElement("div");
+    div.className = "carrusel-card";
+    div.innerHTML = `<div class="cc-icono">${c.icono || "✨"}</div><div class="cc-titulo">${c.titulo}</div><div class="cc-texto">${c.texto}</div>`;
+    pista.appendChild(div);
+  });
+  const allCards = Array.from(pista.children);
+  const total = allCards.length;
+  let indice = 0;
+  function posicionar(){
+    allCards.forEach((card, i) => {
+      let diff = i - indice;
+      if(diff > total / 2) diff -= total;
+      if(diff < -total / 2) diff += total;
+      const abs = Math.abs(diff);
+      let x, z, rotY, opacidad, escala;
+      if(abs <= 2){ x = diff * 150; z = -abs * 200; rotY = diff * -32; opacidad = 1 - abs * 0.28; escala = 1 - abs * 0.14; }
+      else{ x = diff * 150; z = -600; rotY = diff * -32; opacidad = 0; escala = .5; }
+      card.style.transform = `translateX(${x}px) translateZ(${z}px) rotateY(${rotY}deg) scale(${escala})`;
+      card.style.opacity = opacidad;
+      card.style.zIndex = 100 - abs;
+      card.style.filter = abs === 0 ? "none" : `blur(${abs * 0.6}px)`;
+    });
+  }
+  posicionar();
+  const intervalo = setInterval(() => { indice = (indice + 1) % total; posicionar(); }, ROTACION_MS);
+  const inicio = performance.now();
+  const mensajes = ["Cargando...","Preparando tu viaje...","Casi listo...","¡Bienvenido!"];
+  function actualizarBarra(now){
+    const transcurrido = now - inicio;
+    const pct = Math.min(100, (transcurrido / SPLASH_DURACION) * 100);
+    barra.style.width = pct + "%";
+    const idx = Math.min(mensajes.length - 1, Math.floor(pct / (100 / mensajes.length)));
+    texto.textContent = mensajes[idx];
+    if(transcurrido < SPLASH_DURACION) requestAnimationFrame(actualizarBarra);
+    else{ clearInterval(intervalo); splash.classList.add("oculto"); setTimeout(() => splash.remove(), 900); }
+  }
+  requestAnimationFrame(actualizarBarra);
+}
+
+function escapeAttr(s){ return String(s || "").replace(/'/g, "\\'").replace(/"/g, "&quot;"); }
+
+document.getElementById("modalReserva").addEventListener("click", e => { if(e.target.id === "modalReserva") cerrarReserva(); });
+document.getElementById("modalCancelar").addEventListener("click", e => { if(e.target.id === "modalCancelar") cerrarModalCancelar(); });
+document.getElementById("modalNotificaciones").addEventListener("click", e => { if(e.target.id === "modalNotificaciones") cerrarNotificaciones(); });
+document.getElementById("modalQR").addEventListener("click", e => { if(e.target.id === "modalQR") cerrarQR(); });
+document.addEventListener("keydown", e => { if(e.key === "Escape"){ cerrarReserva(); cerrarModalCancelar(); cerrarNotificaciones(); cerrarQR(); cerrarPanel(); } });
+
+let deferredPrompt = null;
+let bannerMostrado = false;
+window.addEventListener("beforeinstallprompt", e => {
+  e.preventDefault(); deferredPrompt = e;
+  if(!localStorage.getItem("vp_banner_cerrado") && !bannerMostrado){
+    bannerMostrado = true;
+    setTimeout(() => document.getElementById("bannerInstalar").classList.add("visible"), 3000);
+  }
+});
+function detectariOS(){ return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream; }
+function esStandalone(){ return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true; }
+function instalarPWA(){
+  if(esStandalone()){ alert("✅ Ya instalada."); return; }
+  if(deferredPrompt){ deferredPrompt.prompt(); deferredPrompt.userChoice.then(c => { if(c.outcome === "accepted") document.getElementById("bannerInstalar").classList.remove("visible"); deferredPrompt = null; }); return; }
+  if(detectariOS()){ alert("iPhone: Compartir → Añadir a pantalla de inicio"); return; }
+  if(/Android/.test(navigator.userAgent)){ alert("Android: menú ⋮ → Instalar aplicación"); return; }
+  alert("Chrome/Edge: menú ⋮ → Instalar aplicación");
+}
+function cerrarBannerPWA(){ document.getElementById("bannerInstalar").classList.remove("visible"); localStorage.setItem("vp_banner_cerrado", "1"); }
+window.addEventListener("appinstalled", () => { document.getElementById("bannerInstalar").classList.remove("visible"); });
+
+if("serviceWorker" in navigator){
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js")
+      .then(reg => { console.log("✅ SW:", reg.scope); setInterval(() => reg.update(), 60000); })
+      .catch(err => console.warn("⚠️ SW:", err));
+  });
+  navigator.serviceWorker.addEventListener("message", event => {
+    if(event.data && event.data.tipo === "SW_ACTUALIZADO") window.location.reload(true);
+  });
+}
+
+/* ============================================================
+   INICIO
+   ============================================================ */
+(async function init(){
+  cargarTema();
+  actualizarEstadoConexion();
+  await cargarDatos();
+  await cargarUsers();
+
+  const tieneSesion = await intentarSesionGuardada();
+  if(!tieneSesion){
+    document.getElementById("loginScreen").style.display = "flex";
+    document.getElementById("splash").style.display = "none";
+  }else{
+    renderTodo();
+    iniciarSplash();
+    sincronizarEstadosReservas();
+    setInterval(sincronizarEstadosReservas, 60000);
+  }
+})();
+</script>
+</body>
+</html>
