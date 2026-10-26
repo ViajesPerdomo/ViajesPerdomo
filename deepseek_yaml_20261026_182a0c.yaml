@@ -1,0 +1,113 @@
+name: Agregar usuario nuevo a users.json
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  agregar:
+    if: contains(github.event.issue.labels.*.name, 'nuevo-usuario')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extraer JSON del issue
+        id: extraer
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = context.payload.issue.body || "";
+            const match = body.match(/```json\s*([\s\S]*?)\s*```/);
+            if (!match) {
+              core.setFailed("No se encontró bloque JSON en el issue");
+              return;
+            }
+            const jsonStr = match[1].trim();
+            try {
+              JSON.parse(jsonStr);
+            } catch (e) {
+              core.setFailed("JSON inválido: " + e.message);
+              return;
+            }
+            core.setOutput("json", jsonStr);
+
+      - name: Añadir usuario a users.json
+        id: agregar
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import sys
+
+          with open("users.json", "r", encoding="utf-8") as f:
+              data = json.load(f)
+
+          if "usuarios" not in data:
+              data["usuarios"] = []
+
+          nuevo = json.loads(os.environ["JSON_USUARIO"])
+
+          existente = any(u.get("telefono") == nuevo.get("telefono") for u in data["usuarios"])
+          if existente:
+              print(f"⚠️ Usuario ya existe: {nuevo.get('telefono')}")
+              sys.exit(0)
+
+          data["usuarios"].append(nuevo)
+
+          with open("users.json", "w", encoding="utf-8") as f:
+              json.dump(data, f, indent=2, ensure_ascii=False)
+
+          print(f"✅ Usuario añadido: {nuevo.get('telefono')}")
+          PY
+        env:
+          JSON_USUARIO: ${{ steps.extraer.outputs.json }}
+
+      - name: Commit y push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add users.json
+          if git diff --staged --quiet; then
+            echo "Sin cambios que commitear"
+          else
+            git commit -m "Agregar usuario desde issue #${{ github.event.issue.number }}"
+            git push
+            echo "✅ Cambios subidos"
+          fi
+
+      - name: Cerrar issue
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              state: "closed"
+            });
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: "✅ Usuario añadido automáticamente a `users.json`."
+            });
+
+      - name: Error al procesar
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: "❌ Error al procesar el usuario. Revisa el workflow en la pestaña **Actions**."
+            });
