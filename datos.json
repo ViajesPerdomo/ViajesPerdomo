@@ -256,13 +256,6 @@
       "ruta": "La Habana - Puerto Padre",
       "fecha": "2026-10-26",
       "horario": "3 pm",
-      "asiento": 1,
-      "marcado": "2026-10-26T12:14:25.467Z"
-    },
-    {
-      "ruta": "La Habana - Puerto Padre",
-      "fecha": "2026-10-26",
-      "horario": "3 pm",
       "asiento": 2,
       "marcado": "2026-10-26T12:14:25.467Z"
     },
