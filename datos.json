@@ -258,11 +258,12 @@
       ],
       "pasajeros": 3,
       "notas": "",
-      "estado": "confirmada",
+      "estado": "cancelada",
       "notificado": false,
-      "mensajeAdmin": "Tu reserva ha sido confirmada. ¡Buen viaje!",
-      "actualizado": "2026-10-27T14:42:59.276Z",
-      "creada": "2026-10-27T14:42:59.277Z"
+      "mensajeAdmin": "Tu reserva ha sido cancelada. Motivo: Encontré otra opción",
+      "actualizado": "2026-10-27T14:47:02.184Z",
+      "creada": "2026-10-27T14:42:59.277Z",
+      "cancelada": "2026-10-27T14:47:02.184Z"
     }
   ],
   "asientosOcupados": [
@@ -272,27 +273,6 @@
       "horario": "03:00 pm",
       "asiento": 18,
       "marcado": "2026-10-25T23:13:00.048Z"
-    },
-    {
-      "ruta": "La Habana - Puerto Padre",
-      "fecha": "2026-10-27",
-      "horario": "03:00 pm",
-      "asiento": 6,
-      "marcado": "2026-10-27T14:42:59.278Z"
-    },
-    {
-      "ruta": "La Habana - Puerto Padre",
-      "fecha": "2026-10-27",
-      "horario": "03:00 pm",
-      "asiento": 5,
-      "marcado": "2026-10-27T14:42:59.278Z"
-    },
-    {
-      "ruta": "La Habana - Puerto Padre",
-      "fecha": "2026-10-27",
-      "horario": "03:00 pm",
-      "asiento": 7,
-      "marcado": "2026-10-27T14:42:59.278Z"
     }
   ]
 }
