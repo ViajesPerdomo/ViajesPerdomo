@@ -138,12 +138,6 @@
   ],
   "cardsSplash": [
     {
-      "id": 1,
-      "icono": "🚐",
-      "titulo": "Flota moderna",
-      "texto": "Guaguas cómodas con aire acondicionado y WiFi."
-    },
-    {
       "id": 2,
       "icono": "🛡️",
       "titulo": "Viajes seguros",
